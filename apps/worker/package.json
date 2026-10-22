@@ -1,0 +1,7 @@
+{
+  "name": "@aliz/worker",
+  "private": true,
+  "scripts": {
+    "dev": "DOTENV_CONFIG_PATH=../../.env tsx watch src/main.ts"
+  }
+}

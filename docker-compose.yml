@@ -1,0 +1,80 @@
+# Local demo only. Production needs managed credentials, approved hosting, TLS, and SSO.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: aliz
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdev}
+      POSTGRES_DB: aliz
+    ports: ['127.0.0.1:54329:5432']
+    volumes: ['postgres_data:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U aliz']
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    ports: ['127.0.0.1:6389:6379']
+    volumes: ['redis_data:/data']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 10
+  setup:
+    build: .
+    profiles: ['app']
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aliz:${POSTGRES_PASSWORD:-localdev}@postgres:5432/aliz
+      NODE_ENV: development
+    command: ['sh', '-c', 'npm run db:migrate && npm run db:seed:demo']
+    depends_on:
+      postgres: { condition: service_healthy }
+  api:
+    build: .
+    profiles: ['app']
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aliz:${POSTGRES_PASSWORD:-localdev}@postgres:5432/aliz
+      API_HOST: 0.0.0.0
+      NODE_ENV: development
+      UPLOAD_DIR: /app/.data/uploads
+    command: ['npm', 'run', 'start', '-w', 'apps/api']
+    depends_on:
+      setup: { condition: service_completed_successfully }
+    volumes: ['uploads:/app/.data/uploads']
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:4000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      retries: 10
+  worker:
+    build: .
+    profiles: ['app']
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://aliz:${POSTGRES_PASSWORD:-localdev}@postgres:5432/aliz
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+      WORKER_MODE: bullmq
+    command: ['node', 'dist-worker/apps/worker/src/main.js']
+    depends_on:
+      setup: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+  web:
+    build: .
+    profiles: ['app']
+    environment:
+      HOSTNAME: 0.0.0.0
+    ports: ['127.0.0.1:3000:3000']
+    depends_on:
+      api: { condition: service_healthy }
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:

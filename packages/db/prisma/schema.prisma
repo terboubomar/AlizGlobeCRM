@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model Brand {
+  id String @id
+  name String
+  nameEn String
+  logo String
+  color String
+  status String @default("DRAFT")
+  branches Branch[]
+  tickets Ticket[]
+  refunds Refund[]
+}
+model Branch {
+  id String @id @default(uuid())
+  brandId String
+  brand Brand @relation(fields:[brandId], references:[id])
+  name String
+  code String @unique
+  city String
+  district String?
+  address String?
+  mapsUrl String?
+  latitude Float?
+  longitude Float?
+  phone String?
+  active Boolean @default(false)
+  demo Boolean @default(false)
+  tickets Ticket[]
+  refunds Refund[]
+  qrs Qr[]
+  @@unique([id, brandId])
+}
+model User {
+  id String @id
+  email String? @unique
+  passwordHash String?
+  sessionVersion Int @default(0)
+  subject String? @unique
+  name String
+  role String
+  financeDuty String @default("NONE")
+  brandIds String[]
+  branchIds String[]
+  enabled Boolean @default(true)
+  telegram TelegramConnection?
+  telegramNotifications TelegramNotification[]
+}
+model Ticket {
+  id String @id @default(uuid())
+  sequence Int @unique @default(autoincrement())
+  brandId String
+  brand Brand @relation(fields:[brandId], references:[id])
+  branchId String?
+  branch Branch? @relation(fields:[branchId, brandId], references:[id, brandId])
+  unknownReason String?
+  source String
+  category String
+  priority String
+  state String @default("NEW")
+  description String
+  receiptEncrypted String?
+  confirmation ComplaintConfirmation?
+  branchBrief String?
+  customer String?
+  phoneHash String?
+  externalOrder String?
+  platform String?
+  communicationsOwner String
+  resolutionOwner String?
+  creator String
+  receivedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  acknowledgedAt DateTime?
+  actionCompletedAt DateTime?
+  customerConfirmedAt DateTime?
+  closedAt DateTime?
+  version Int @default(1)
+  policyVersion String @default("PROPOSED-DEMO-V1")
+  slaPolicy Json?
+  escalated Boolean @default(false)
+  demo Boolean @default(false)
+  events Event[]
+  timers Timer[]
+  refunds Refund[]
+  tasks Task[]
+  access Access[]
+  attachments Attachment[]
+  reviews Review[]
+  telegramNotifications TelegramNotification[]
+  @@unique([id,brandId])
+  @@index([brandId,branchId,state])
+  @@index([phoneHash])
+}
+model Event {
+  id String @id @default(uuid())
+  ticketId String
+  ticket Ticket @relation(fields:[ticketId], references:[id])
+  type String
+  actor String
+  note String?
+  createdAt DateTime @default(now())
+}
+model Timer {
+  id String @id @default(uuid())
+  ticketId String
+  ticket Ticket @relation(fields:[ticketId], references:[id])
+  milestone String
+  dueAt DateTime
+  warningAt DateTime
+  warnedAt DateTime?
+  breachedAt DateTime?
+  completedAt DateTime?
+  @@unique([ticketId,milestone])
+}
+model Refund {
+  id String @id @default(uuid())
+  sequence Int @unique @default(autoincrement())
+  ticketId String?
+  ticket Ticket? @relation(fields:[ticketId,brandId], references:[id,brandId],onDelete:Restrict)
+  brandId String
+  brand Brand @relation(fields:[brandId], references:[id])
+  branchId String?
+  branch Branch? @relation(fields:[branchId,brandId], references:[id,brandId],onDelete:Restrict)
+  externalOrder String
+  platform String
+  events RefundEvent[]
+  attachments Attachment[]
+  kind String
+  reason String
+  amountMinor Int?
+  status String @default("REQUESTED")
+  requester String
+  approver String?
+  processor String?
+  verifier String?
+  externalReference String?
+  proofId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  version Int @default(1)
+  @@unique([ticketId,kind])
+}
+model RefundEvent {
+  id String @id @default(uuid())
+  refundId String
+  refund Refund @relation(fields:[refundId],references:[id])
+  type String
+  actor String
+  note String?
+  createdAt DateTime @default(now())
+}
+model Qr {
+  id String @id @default(uuid())
+  branchId String
+  branch Branch @relation(fields:[branchId], references:[id])
+  hash String @unique
+  codeEncrypted String?
+  placement String
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+  scans Int @default(0)
+}
+model Access {
+  id String @id @default(uuid())
+  ticketId String
+  ticket Ticket @relation(fields:[ticketId], references:[id])
+  hash String @unique
+  expiresAt DateTime
+}
+model Attachment {
+  id String @id @default(uuid())
+  ticketId String?
+  ticket Ticket? @relation(fields:[ticketId], references:[id],onDelete:Restrict)
+  refundId String?
+  refund Refund? @relation(fields:[refundId], references:[id],onDelete:Restrict)
+  key String @unique
+  mime String
+  size Int
+  checksum String
+  status String
+  createdAt DateTime @default(now())
+}
+model Task {
+  id String @id @default(uuid())
+  ticketId String
+  ticket Ticket @relation(fields:[ticketId], references:[id])
+  owner String
+  dueAt DateTime
+  note String
+  completedAt DateTime?
+}
+model Shift {
+  id String @id @default(uuid())
+  userId String
+  brandId String?
+  version Int @default(0)
+  cancelledAt DateTime?
+  start DateTime
+  end DateTime
+  breakStart DateTime?
+  breakEnd DateTime?
+  lead Boolean @default(false)
+  dayOff Boolean @default(false)
+}
+model Leave {
+  id String @id @default(uuid())
+  userId String
+  start DateTime
+  end DateTime
+  status String @default("REQUESTED")
+}
+model Review {
+  id String @id @default(uuid())
+  ticketId String
+  ticket Ticket @relation(fields:[ticketId], references:[id])
+  reviewer String
+  score Int
+  note String
+  createdAt DateTime @default(now())
+}
+model Audit {
+  id String @id @default(uuid())
+  actor String
+  action String
+  entityId String
+  createdAt DateTime @default(now())
+}
+model Outbox {
+  id String @id @default(uuid())
+  key String @unique
+  type String
+  ticketId String
+  brandId String
+  branchId String?
+  deliveredAt DateTime?
+  createdAt DateTime @default(now())
+}
+model Idempotency {
+  key String @id
+  requestHash String
+  response Json
+  expiresAt DateTime
+}
+
+model ComplaintConfirmation {
+  id String @id @default(uuid())
+  ticketId String @unique
+  ticket Ticket @relation(fields:[ticketId],references:[id])
+  payloadEncrypted String
+  recipientHash String
+  status String @default("QUEUED")
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  claimedAt DateTime?
+  expiresAt DateTime
+  providerMessageId String? @unique
+  lastError String?
+  deliveredAt DateTime?
+  readAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([status,nextAttemptAt])
+  @@index([recipientHash,createdAt])
+}
+
+model TelegramConnection {
+  userId String @id
+  user User @relation(fields:[userId], references:[id])
+  accountEncrypted String?
+  chatHash String? @unique
+  linkedAt DateTime?
+  linkCodeHash String? @unique
+  linkExpiresAt DateTime?
+  pendingEncrypted String?
+  pendingHash String?
+}
+
+model TelegramNotification {
+  id String @id @default(uuid())
+  key String @unique
+  ticketId String
+  ticket Ticket @relation(fields:[ticketId], references:[id])
+  userId String
+  user User @relation(fields:[userId], references:[id])
+  connectionHash String
+  kind String
+  status String @default("QUEUED")
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  claimedAt DateTime?
+  expiresAt DateTime
+  sentAt DateTime?
+  messageId String?
+  lastError String?
+  createdAt DateTime @default(now())
+  @@index([status,nextAttemptAt])
+}

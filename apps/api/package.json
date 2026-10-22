@@ -1,0 +1,9 @@
+{
+  "name": "@aliz/api",
+  "private": true,
+  "scripts": {
+    "dev": "DOTENV_CONFIG_PATH=../../.env tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/apps/api/src/main.js"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "outDir": "dist-worker", "rootDir": "." },
+  "include": ["apps/worker/src/**/*.ts", "packages/db/client.ts"]
+}

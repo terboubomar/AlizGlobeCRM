@@ -1,0 +1,26 @@
+# Mount under nginx/conf.d after supplying your actual hostname and certificate paths.
+# Do not expose the web or API containers directly to the Internet.
+# Set TRUSTED_PROXY_CIDRS to this proxy's exact address/subnet, then
+# PROXY_HEADERS_SANITIZED=true in the API environment.
+log_format crm_no_query '$remote_addr $request_method $uri $status';
+server {
+    listen 443 ssl;
+    server_name crm.example.com;
+    ssl_certificate /etc/ssl/crm/fullchain.pem;
+    ssl_certificate_key /etc/ssl/crm/privkey.pem;
+    access_log /var/log/nginx/crm-access.log crm_no_query;
+    client_max_body_size 16m;
+    location /api/ {
+        proxy_pass http://api:4000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location / {
+        proxy_pass http://web:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
+}

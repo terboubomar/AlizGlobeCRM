@@ -1,0 +1,32 @@
+[
+  {
+    "source": "Aliz Globe Logo.webp",
+    "repositoryPath": "apps/web/public/logos/aliz.webp",
+    "sha256": "762b4e37efaceddf10441b16585f52131ef49d17004a786b10c396bfdac2afdc"
+  },
+  {
+    "source": "Waqf Logo.jpeg",
+    "repositoryPath": "apps/web/public/logos/waqf.jpeg",
+    "sha256": "a08e74bc888e9b2c212b9ab4754540e46d25c1244dee04a3724104e9a4247a37"
+  },
+  {
+    "source": "kebab alom logo.png",
+    "repositoryPath": "apps/web/public/logos/kabab.png",
+    "sha256": "1f5ce230779d6ef5fccca30726289cfee6056eb972372b689e14aa8744b4688d"
+  },
+  {
+    "source": "batatision.jpeg",
+    "repositoryPath": "apps/web/public/logos/batatisyon.jpeg",
+    "sha256": "becfb14f2a6b40719efe750463d71397dc84a4c6afd3769ade647aff0ca9e0a5"
+  },
+  {
+    "source": "mazmuzil logo.webp",
+    "repositoryPath": "apps/web/public/logos/mazmuzil.webp",
+    "sha256": "881eed853ca44d689f32019f51feeef76660cb372474b93041af19dc3b185c4a"
+  },
+  {
+    "source": "shawarman logo.webp",
+    "repositoryPath": "apps/web/public/logos/shawarman.webp",
+    "sha256": "104079a364b235ef33fdddb84d1c62f821fc39f004d95b595eafdf0787a80022"
+  }
+]

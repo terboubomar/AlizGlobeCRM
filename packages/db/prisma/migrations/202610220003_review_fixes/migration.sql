@@ -1,0 +1,3 @@
+ALTER TABLE "User" ADD COLUMN "financeDuty" TEXT NOT NULL DEFAULT 'NONE';
+ALTER TABLE "User" ADD CONSTRAINT "valid_finance_duty" CHECK ("financeDuty" IN ('NONE','APPROVER','PROCESSOR','VERIFIER'));
+ALTER TABLE "Ticket" ADD COLUMN "slaPolicy" JSONB;

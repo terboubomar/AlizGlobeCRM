@@ -1,0 +1,25 @@
+-- Keep existing financial records and their complaint links while giving refunds their own scope.
+ALTER TABLE "Refund" ADD COLUMN "sequence" SERIAL;
+CREATE UNIQUE INDEX "Refund_sequence_key" ON "Refund"("sequence");
+ALTER TABLE "Refund" ADD COLUMN "brandId" TEXT;
+ALTER TABLE "Refund" ADD COLUMN "branchId" TEXT;
+ALTER TABLE "Refund" ADD COLUMN "externalOrder" TEXT;
+ALTER TABLE "Refund" ADD COLUMN "platform" TEXT;
+UPDATE "Refund" r SET "brandId"=t."brandId", "branchId"=t."branchId", "externalOrder"=COALESCE(t."externalOrder",'LEGACY-UNSPECIFIED'), "platform"=COALESCE(t."platform",'LEGACY-UNSPECIFIED') FROM "Ticket" t WHERE r."ticketId"=t.id;
+ALTER TABLE "Refund" ALTER COLUMN "brandId" SET NOT NULL;
+ALTER TABLE "Refund" ALTER COLUMN "externalOrder" SET NOT NULL;
+ALTER TABLE "Refund" ALTER COLUMN "platform" SET NOT NULL;
+ALTER TABLE "Refund" ALTER COLUMN "ticketId" DROP NOT NULL;
+ALTER TABLE "Refund" DROP CONSTRAINT "Refund_ticketId_fkey";
+CREATE UNIQUE INDEX "Ticket_id_brandId_key" ON "Ticket"("id","brandId");
+ALTER TABLE "Refund" ADD CONSTRAINT "Refund_ticketId_brandId_fkey" FOREIGN KEY ("ticketId","brandId") REFERENCES "Ticket"("id","brandId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Refund" ADD CONSTRAINT "Refund_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Refund" ADD CONSTRAINT "Refund_branchId_brandId_fkey" FOREIGN KEY ("branchId","brandId") REFERENCES "Branch"("id","brandId") ON DELETE RESTRICT ON UPDATE CASCADE;
+CREATE TABLE "RefundEvent" ("id" TEXT NOT NULL,"refundId" TEXT NOT NULL,"type" TEXT NOT NULL,"actor" TEXT NOT NULL,"note" TEXT,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "RefundEvent_pkey" PRIMARY KEY("id"));
+ALTER TABLE "RefundEvent" ADD CONSTRAINT "RefundEvent_refundId_fkey" FOREIGN KEY("refundId") REFERENCES "Refund"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+INSERT INTO "RefundEvent" ("id","refundId","type","actor","createdAt") SELECT 'migrated-'||id,id,'REQUEST_IMPORTED','SYSTEM',"createdAt" FROM "Refund";
+CREATE TRIGGER refund_events_immutable BEFORE UPDATE OR DELETE ON "RefundEvent" FOR EACH ROW EXECUTE FUNCTION prevent_history_mutation();
+ALTER TABLE "Attachment" ALTER COLUMN "ticketId" DROP NOT NULL;
+ALTER TABLE "Attachment" ADD COLUMN "refundId" TEXT;
+ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_refundId_fkey" FOREIGN KEY("refundId") REFERENCES "Refund"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_exactly_one_owner" CHECK (("ticketId" IS NOT NULL)::int + ("refundId" IS NOT NULL)::int = 1);

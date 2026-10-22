@@ -1,0 +1,7 @@
+ALTER TABLE "Branch"
+  ADD COLUMN "district" TEXT,
+  ADD COLUMN "address" TEXT,
+  ADD COLUMN "mapsUrl" TEXT,
+  ADD COLUMN "latitude" DOUBLE PRECISION,
+  ADD COLUMN "longitude" DOUBLE PRECISION,
+  ADD COLUMN "phone" TEXT;
