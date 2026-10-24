@@ -5,7 +5,7 @@ description: This repo's CI pipeline and release/deploy model. Use when changing
 
 # CI/CD for Aliz Globe CRM
 
-One GitHub Actions workflow, `.github/workflows/ci.yml` (job `verify`), runs on every push and pull request. There is no deploy pipeline in the repo — release is manual and documented in `docs/DEPLOYMENT.md`.
+One GitHub Actions workflow, `.github/workflows/ci.yml`, runs on every push and pull request with two jobs: `verify` (the checks below) and `secrets` (gitleaks over full history, config in `.gitleaks.toml`). The workflow has `permissions: contents: read`, actions pinned to commit SHAs (with a `# vX.Y.Z` comment), and `persist-credentials: false` on checkout. Keep all three when editing it. Dependabot (`.github/dependabot.yml`) opens weekly update PRs for npm and the pinned actions. There is no deploy pipeline in the repo — release is manual and documented in `docs/DEPLOYMENT.md`.
 
 ## The CI job (keep steps in this order)
 
