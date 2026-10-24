@@ -6,6 +6,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Prisma is pinned on 6.x on purpose: 7 moves the connection URL out of the
+    # schema and needs a planned migration (see .claude/skills/db-migration).
+    ignore:
+      - dependency-name: prisma
+        update-types: [version-update:semver-major]
+      - dependency-name: '@prisma/client'
+        update-types: [version-update:semver-major]
     groups:
       npm-minor-and-patch:
         update-types: [minor, patch]
