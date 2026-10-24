@@ -203,7 +203,7 @@ input[type='checkbox'] {
 .group-logo small {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 .workspace {
   display: flex;
@@ -219,7 +219,7 @@ input[type='checkbox'] {
 }
 .workspace small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 .workspace > svg {
@@ -237,7 +237,7 @@ input[type='checkbox'] {
   flex-shrink: 0;
 }
 .nav-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #a3978e;
   margin: 26px 14px 8px;
 }
@@ -275,7 +275,7 @@ input[type='checkbox'] {
   border-radius: 5px;
   min-width: 23px;
   text-align: center;
-  font-size: 11px;
+  font-size: 12px;
 }
 .sidebar-bottom {
   margin-top: auto;
@@ -287,11 +287,11 @@ input[type='checkbox'] {
   align-items: center;
   margin: 16px 6px 23px;
   color: #8e8175;
-  font-size: 10px;
+  font-size: 12px;
 }
 .support-note small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   color: #ada094;
 }
 .profile {
@@ -320,11 +320,11 @@ input[type='checkbox'] {
   font-size: 13px;
 }
 .profile b {
-  font-size: 11px;
+  font-size: 12px;
 }
 .profile small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 .profile .icon-btn {
@@ -369,7 +369,7 @@ input[type='checkbox'] {
   align-items: center;
   gap: 7px;
   color: #85745c;
-  font-size: 11px;
+  font-size: 12px;
 }
 .demo-pill > span {
   width: 6px;
@@ -403,7 +403,7 @@ input[type='checkbox'] {
   gap: 20px;
 }
 .date-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #998b7d;
   margin-bottom: 3px;
 }
@@ -425,7 +425,7 @@ input[type='checkbox'] {
   border-radius: 8px;
   padding: 8px 13px;
   margin-bottom: 23px;
-  font-size: 11px;
+  font-size: 12px;
   color: #84725b;
 }
 .demo-banner > span {
@@ -436,11 +436,11 @@ input[type='checkbox'] {
   white-space: nowrap;
 }
 .demo-banner p {
-  font-size: 10px;
+  font-size: 12px;
 }
 .demo-banner button {
   margin-right: auto;
-  font-size: 10px;
+  font-size: 12px;
   color: #86704e;
   min-height: 25px;
 }
@@ -476,7 +476,7 @@ input[type='checkbox'] {
   max-width: 180px;
 }
 .scope-note {
-  font-size: 10px;
+  font-size: 12px;
   color: #a2968c;
   display: flex;
   gap: 9px;
@@ -484,7 +484,7 @@ input[type='checkbox'] {
 .refresh {
   margin-right: auto;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 .metrics {
   display: grid;
@@ -549,7 +549,7 @@ input[type='checkbox'] {
   display: flex;
   gap: 6px;
   align-items: center;
-  font-size: 10px;
+  font-size: 12px;
   color: #a39385;
   white-space: nowrap;
 }
@@ -563,7 +563,7 @@ input[type='checkbox'] {
   font-size: 14px;
 }
 .section-label > span {
-  font-size: 10px;
+  font-size: 12px;
   color: #9d8c80;
 }
 .brand-strip {
@@ -600,7 +600,7 @@ input[type='checkbox'] {
 }
 .brand-tile small {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
   color: #9b8c80;
 }
 .brand-indicator {
@@ -638,7 +638,7 @@ input[type='checkbox'] {
   font-size: 15px;
 }
 .panel-head p {
-  font-size: 10px;
+  font-size: 12px;
   color: #a18f7e;
   margin-top: 2px;
 }
@@ -648,7 +648,7 @@ input[type='checkbox'] {
   border-radius: 5px;
   padding: 0 6px;
   margin-right: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 .queue-tabs {
@@ -666,7 +666,7 @@ input[type='checkbox'] {
   min-height: 43px;
   padding: 6px 0 12px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -686,7 +686,7 @@ table {
 }
 th {
   font-weight: 600;
-  font-size: 10px;
+  font-size: 12px;
   color: #a18e7e;
   background: #fcfaf6;
   padding: 11px 14px;
@@ -714,8 +714,7 @@ tbody tr:hover {
   gap: 1px;
 }
 .ticket-number {
-  font-size: 10px;
-  font-family: Arial, sans-serif;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.3px;
   color: #a28b79;
@@ -729,13 +728,12 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 9px;
+  font-size: 12px;
   color: #b09e8d;
   margin-top: 3px;
 }
 .priority {
-  font-family: Arial, sans-serif;
-  font-size: 8px;
+  font-size: 12px;
   border: 1px solid #e9e1d7;
   border-radius: 3px;
   padding: 0 3px;
@@ -758,11 +756,11 @@ tbody tr:hover {
 }
 .table-brand b {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
 }
 .table-brand small {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
   color: #a18e7f;
 }
 .badge {
@@ -774,7 +772,7 @@ tbody tr:hover {
   color: var(--muted);
   border: 1px solid #e9e1d8;
   border-radius: 5px;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.8;
   white-space: nowrap;
 }
@@ -802,7 +800,7 @@ tbody tr:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 600;
 }
 .sla.late {
@@ -815,7 +813,7 @@ tbody tr:hover {
   color: #879680;
 }
 .owner-name {
-  font-size: 10px;
+  font-size: 12px;
   color: #a08c7b;
   max-width: 85px;
   display: block;
@@ -828,11 +826,11 @@ tbody tr:hover {
   align-items: center;
   border-top: 1px solid var(--border);
   padding: 11px 18px;
-  font-size: 9px;
+  font-size: 12px;
   color: #ac9b89;
 }
 .panel-bottom .text-btn {
-  font-size: 10px;
+  font-size: 12px;
 }
 .activity-panel .panel-head svg {
   color: #ac9786;
@@ -869,18 +867,18 @@ tbody tr:hover {
   background: #f7e6e2;
 }
 .activity-item b {
-  font-size: 10px;
+  font-size: 12px;
   display: block;
   font-weight: 700;
 }
 .activity-item small {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
   color: #a29181;
 }
 .activity-item time {
   display: block;
-  font-size: 8px;
+  font-size: 12px;
   color: #bbad9c;
   margin-top: 2px;
 }
@@ -893,18 +891,18 @@ tbody tr:hover {
 }
 .handoff-note > b {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 5px;
   color: #7e6553;
 }
 .handoff-note p {
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.9;
   color: #a08b77;
   margin: 4px 0;
 }
 .handoff-note .text-btn {
-  font-size: 10px;
+  font-size: 12px;
 }
 .bottom-summary {
   border: 1px solid var(--border);
@@ -929,11 +927,11 @@ tbody tr:hover {
   font-size: 13px;
 }
 .bottom-summary p {
-  font-size: 10px;
+  font-size: 12px;
   color: #a18b77;
 }
 .bottom-summary .secondary {
-  font-size: 11px;
+  font-size: 12px;
   min-height: 38px;
 }
 .page-footer {
@@ -942,7 +940,7 @@ tbody tr:hover {
   display: flex;
   justify-content: space-between;
   color: #ad9c8b;
-  font-size: 9px;
+  font-size: 12px;
 }
 .page-footer > span:last-child {
   display: flex;
@@ -988,7 +986,7 @@ tbody tr:hover {
   border-radius: 0;
   border: 0;
   border-top: 1px solid var(--border);
-  font-size: 11px;
+  font-size: 12px;
 }
 .empty {
   text-align: center;
@@ -1033,10 +1031,10 @@ tbody tr:hover {
 }
 .branch-card p {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 .branch-code {
-  font-size: 11px;
+  font-size: 12px;
   text-align: right;
   color: #a79583;
   margin: 9px 0 18px;
@@ -1047,7 +1045,7 @@ tbody tr:hover {
   align-items: center;
   border-top: 1px solid var(--border);
   padding-top: 9px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .refund-row {
   display: flex;
@@ -1069,7 +1067,7 @@ tbody tr:hover {
 .refund-row small {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 .padded {
   padding: 22px;
@@ -1149,7 +1147,7 @@ tbody tr:hover {
   font-size: 12px;
 }
 .report-caption {
-  font-size: 11px;
+  font-size: 12px;
   color: #9c8a79;
   margin: 0 22px 20px;
 }
@@ -1185,7 +1183,7 @@ tbody tr:hover {
   font-size: 13px;
 }
 .decisions p {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .decision-icon {
@@ -1206,7 +1204,7 @@ tbody tr:hover {
   justify-content: space-between;
 }
 .hint {
-  font-size: 11px;
+  font-size: 12px;
   color: #a18a72;
   margin: 11px 0 17px;
 }
@@ -1300,7 +1298,7 @@ tbody tr:hover {
   padding-top: 20px;
 }
 .form-footer p {
-  font-size: 11px;
+  font-size: 12px;
   color: #a18a75;
 }
 .intake-intro {
@@ -1317,7 +1315,7 @@ tbody tr:hover {
   font-size: 14px;
 }
 .intake-intro p {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .intake-intro .badge {
@@ -1361,7 +1359,7 @@ tbody tr:hover {
 }
 .detail-facts small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   color: #a38b74;
 }
 .detail-facts b {
@@ -1383,7 +1381,7 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 10px;
+  font-size: 12px;
   border: 1px solid var(--border);
   padding: 8px 10px;
   border-radius: 6px;
@@ -1434,7 +1432,7 @@ tbody tr:hover {
   display: block;
 }
 .timeline small {
-  font-size: 10px;
+  font-size: 12px;
   color: #a88e76;
   display: block;
 }
@@ -1483,7 +1481,7 @@ tbody tr:hover {
 .attachment-grid small {
   display: block;
   color: #a38b72;
-  font-size: 10px;
+  font-size: 12px;
 }
 .upload-zone {
   display: flex;
@@ -1501,11 +1499,11 @@ tbody tr:hover {
   font-size: 13px;
 }
 .upload-zone small {
-  font-size: 10px;
+  font-size: 12px;
 }
 .upload-zone input {
   max-width: 100%;
-  font-size: 11px;
+  font-size: 12px;
 }
 .review {
   padding: 20px 25px;
@@ -1536,7 +1534,7 @@ tbody tr:hover {
   color: #a18a71;
 }
 .qr-poster small {
-  font-size: 10px;
+  font-size: 12px;
   color: #a38e76;
   display: block;
   margin-top: 17px;
@@ -1566,7 +1564,7 @@ tbody tr:hover {
 .qr-row small {
   display: block;
   color: #ad9074;
-  font-size: 10px;
+  font-size: 12px;
 }
 .danger {
   color: #b94b4c;
@@ -1580,14 +1578,14 @@ tbody tr:hover {
 }
 .shift-block b {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
 }
 .shift-block small {
   display: block;
-  font-size: 9px;
+  font-size: 12px;
 }
 .unplanned {
-  font-size: 10px;
+  font-size: 12px;
   color: #bcaa97;
 }
 .notification-panel {
@@ -1617,7 +1615,7 @@ tbody tr:hover {
 }
 .notification-item small {
   display: block;
-  font-size: 10px;
+  font-size: 12px;
   color: #a0836b;
 }
 .notification-item > span {
@@ -1654,7 +1652,7 @@ tbody tr:hover {
   width: 100%;
 }
 .login .notice {
-  font-size: 11px;
+  font-size: 12px;
   justify-content: center;
 }
 .mobile-only {
@@ -1730,10 +1728,10 @@ tbody tr:hover {
     padding: 17px 15px;
   }
   .metric-title {
-    font-size: 10px;
+    font-size: 12px;
   }
   .metric-foot {
-    font-size: 9px;
+    font-size: 12px;
   }
   .brand-tile {
     gap: 6px;
@@ -1744,10 +1742,10 @@ tbody tr:hover {
     height: 35px;
   }
   .brand-tile b {
-    font-size: 11px;
+    font-size: 12px;
   }
   .demo-banner p {
-    font-size: 9px;
+    font-size: 12px;
   }
   .demo-banner {
     gap: 10px;
@@ -1773,7 +1771,7 @@ tbody tr:hover {
     font-size: 17px;
   }
   .workspace b {
-    font-size: 11px;
+    font-size: 12px;
   }
   .metric-foot {
     display: none;
@@ -1788,7 +1786,7 @@ tbody tr:hover {
     font-size: 23px;
   }
   .heading-actions .primary {
-    font-size: 11px;
+    font-size: 12px;
     padding: 9px 12px;
   }
   .brand-strip {
@@ -1798,7 +1796,7 @@ tbody tr:hover {
     display: none;
   }
   .scope-note {
-    font-size: 9px;
+    font-size: 12px;
   }
   .report-grid {
     grid-template-columns: 1fr;
@@ -1816,13 +1814,13 @@ tbody tr:hover {
     font-size: 12px;
   }
   .bottom-summary p {
-    font-size: 9px;
+    font-size: 12px;
   }
   .top-tools {
     gap: 12px;
   }
   .demo-pill {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 @media (max-width: 760px) {
@@ -1856,7 +1854,7 @@ tbody tr:hover {
   }
   .breadcrumb {
     gap: 8px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .top-tools {
     gap: 7px;
@@ -1876,7 +1874,7 @@ tbody tr:hover {
     display: none;
   }
   .page-heading p {
-    font-size: 11px;
+    font-size: 12px;
   }
   .heading-actions {
     width: 100%;
@@ -1886,24 +1884,24 @@ tbody tr:hover {
     font-size: 13px;
   }
   .date-label {
-    font-size: 10px;
+    font-size: 12px;
   }
   .demo-banner {
     margin-bottom: 17px;
     padding: 8px 10px;
   }
   .demo-banner > span {
-    font-size: 10px;
+    font-size: 12px;
   }
   .demo-banner button {
-    font-size: 9px;
+    font-size: 12px;
   }
   .scope-toolbar {
     margin-bottom: 15px;
     gap: 8px;
   }
   .scope-note {
-    font-size: 9px;
+    font-size: 12px;
   }
   .scope-select select {
     font-size: 12px;
@@ -1917,7 +1915,7 @@ tbody tr:hover {
     padding: 15px 17px;
   }
   .metric-title {
-    font-size: 11px;
+    font-size: 12px;
   }
   .metric-title svg {
     width: 17px;
@@ -1935,7 +1933,7 @@ tbody tr:hover {
   }
   .metric-foot {
     display: flex;
-    font-size: 8px;
+    font-size: 12px;
   }
   .brand-strip {
     grid-template-columns: repeat(2, 1fr);
@@ -1953,7 +1951,7 @@ tbody tr:hover {
     font-size: 12px;
   }
   .brand-tile small {
-    font-size: 9px;
+    font-size: 12px;
   }
   .brand-section {
     margin-bottom: 23px;
@@ -1965,7 +1963,7 @@ tbody tr:hover {
     font-size: 13px;
   }
   .section-label > span {
-    font-size: 9px;
+    font-size: 12px;
   }
   .panel-head {
     padding: 17px 15px 13px;
@@ -1978,7 +1976,7 @@ tbody tr:hover {
     padding-inline: 15px;
   }
   .queue-tabs button {
-    font-size: 10px;
+    font-size: 12px;
   }
   .priority-panel table {
     min-width: 630px;
@@ -2001,14 +1999,14 @@ tbody tr:hover {
     font-size: 12px;
   }
   .bottom-summary p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .page-footer {
-    font-size: 8px;
+    font-size: 12px;
     gap: 10px;
   }
   .page-footer > span:last-child {
-    font-size: 7px;
+    font-size: 12px;
   }
   .branch-grid {
     grid-template-columns: 1fr;
@@ -2084,11 +2082,11 @@ tbody tr:hover {
     gap: 17px;
   }
   .detail-tabs button {
-    font-size: 9px;
+    font-size: 12px;
   }
   .dialog .notice {
     margin: 15px;
-    font-size: 10px;
+    font-size: 12px;
   }
   .timeline {
     margin: 20px 18px;
@@ -2110,7 +2108,7 @@ tbody tr:hover {
     font-size: 12px;
   }
   .intake-intro p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .intake-intro .square {
     width: 38px;
@@ -2133,10 +2131,10 @@ tbody tr:hover {
     font-size: 12px;
   }
   .decisions p {
-    font-size: 10px;
+    font-size: 12px;
   }
   .decisions .badge {
-    font-size: 9px;
+    font-size: 12px;
   }
   .settings-identity {
     padding-inline: 15px;
@@ -2151,21 +2149,21 @@ tbody tr:hover {
     padding: 30px 22px;
   }
   .report-caption {
-    font-size: 10px;
+    font-size: 12px;
   }
   .chart-row {
     gap: 10px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .chart-row > span {
     width: 100px;
   }
   .task-row {
     gap: 10px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .notice {
-    font-size: 11px;
+    font-size: 12px;
   }
   .toast {
     left: 17px;
@@ -2253,7 +2251,7 @@ tbody tr:hover {
   color: #9d7b5f;
   border-radius: 20px;
   padding: 3px 13px;
-  font-size: 10px;
+  font-size: 12px;
   margin-bottom: 14px;
 }
 .public-brand h1 {
@@ -2272,7 +2270,7 @@ tbody tr:hover {
 }
 .public-card > .notice {
   margin: 0 30px 10px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .public-upload {
   border: 1px dashed #cfbda9;
@@ -2290,11 +2288,11 @@ tbody tr:hover {
   font-size: 12px;
 }
 .public-upload small {
-  font-size: 10px;
+  font-size: 12px;
 }
 .public-upload input {
   max-width: 100%;
-  font-size: 10px;
+  font-size: 12px;
   border: 0;
   padding: 7px;
 }
@@ -2305,7 +2303,7 @@ tbody tr:hover {
   background: #f3f0e7;
   border-radius: 9px;
   padding: 13px;
-  font-size: 10px;
+  font-size: 12px;
   color: #9d866c;
 }
 .public-privacy svg {
@@ -2313,7 +2311,7 @@ tbody tr:hover {
   margin-top: 4px;
 }
 .public-card .checkbox {
-  font-size: 11px;
+  font-size: 12px;
   align-items: flex-start;
 }
 .public-card .checkbox input {
@@ -2324,7 +2322,7 @@ tbody tr:hover {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
   color: #b39a7f;
   margin-top: 22px;
 }
@@ -2345,7 +2343,6 @@ tbody tr:hover {
   font-size: 25px;
 }
 .public-success .receipt-number {
-  font-family: Arial, sans-serif;
   font-size: 24px;
   letter-spacing: 1px;
   background: #f6f0e7;
@@ -2386,7 +2383,7 @@ tbody tr:hover {
     font-size: 20px;
   }
   .public-brand .public-badge {
-    font-size: 9px;
+    font-size: 12px;
   }
   .public-card .form-grid {
     grid-template-columns: 1fr;
@@ -2448,7 +2445,7 @@ th {
   font-size: 12px;
 }
 .priority {
-  font-size: 10px;
+  font-size: 12px;
 }
 .page-heading p {
   font-size: 13px;
@@ -2896,11 +2893,10 @@ th {
 .work-card-top > span:first-child {
   font-size: 12px;
   color: var(--muted);
-  font-family: Arial, sans-serif;
   font-weight: 600;
 }
 .work-card-top .priority {
-  font-size: 11px;
+  font-size: 12px;
 }
 .work-card-subject {
   font-size: 14px;
@@ -3705,7 +3701,7 @@ th {
 }
 .profile-dropdown-identity small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 .profile-logout {
   width: 100%;
@@ -3872,7 +3868,7 @@ th {
 .qr-link {
   margin-top: 18px;
   width: 100%;
-  font-size: 11px;
+  font-size: 12px;
 }
 @media (max-width: 650px) {
   .qr-controls,
@@ -4002,7 +3998,7 @@ th {
 }
 .user-editor-fields .field small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
 }
 .user-role-preview {
@@ -4252,7 +4248,7 @@ th {
   display: block;
   margin-top: 7px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
 }
 .role-brand-name {
@@ -4538,7 +4534,7 @@ th {
 .schedule-staff-role {
   display: block;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 6px;
 }
 .shared-schedule-table .schedule-today {
@@ -4756,12 +4752,12 @@ th {
 .reports-trend-dates {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .reports-table .table-brand small {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   margin-top: 4px;
 }
@@ -4836,7 +4832,7 @@ th {
   white-space: nowrap;
 }
 .sidebar .group-logo small {
-  font-size: 10px;
+  font-size: 12px;
   margin-top: 2px;
   color: var(--muted);
   white-space: nowrap;
@@ -4857,7 +4853,7 @@ th {
 }
 .sidebar .nav-label {
   margin: 9px 12px 9px;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.8;
   font-weight: 600;
   color: var(--muted);
@@ -4926,7 +4922,7 @@ th {
   padding: 2px 5px;
   line-height: 1.6;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .sidebar nav button.active .nav-count {
   color: #a12529;
@@ -4959,7 +4955,7 @@ th {
   font-size: 12px;
 }
 .sidebar .profile small {
-  font-size: 10px;
+  font-size: 12px;
   margin-top: 2px;
   color: var(--muted);
 }
@@ -4981,12 +4977,12 @@ th {
     font-size: 17px;
   }
   .sidebar .group-logo small {
-    font-size: 9px;
+    font-size: 12px;
   }
   .sidebar nav button {
     padding-inline: 6px;
     gap: 6px;
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 @media (max-width: 760px) {
@@ -5007,7 +5003,7 @@ th {
     font-size: 18px;
   }
   .sidebar .group-logo small {
-    font-size: 9px;
+    font-size: 12px;
   }
 }
 @media (max-height: 650px) {
@@ -5060,7 +5056,7 @@ th {
   color: var(--muted);
 }
 .reports-comparison-period b {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 .reports-metric-change {
@@ -5070,7 +5066,7 @@ th {
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   border-top: 1px solid var(--border);
   padding-top: 10px;
 }
@@ -5109,7 +5105,7 @@ th {
   align-items: center;
   justify-content: flex-end;
   margin-bottom: 16px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .report-trend-legend span {
@@ -5149,7 +5145,7 @@ th {
     min-width: 0;
   }
   .reports-metrics article span {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 
@@ -5189,7 +5185,7 @@ th {
 }
 .customer-receipt dt {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   margin-bottom: 5px;
 }
 .customer-receipt dd {
@@ -5514,7 +5510,7 @@ th {
   padding: 12px 0;
 }
 .settings-audit-search span {
-  font-size: 11px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 .settings-audit td:nth-child(3) {
@@ -5577,4 +5573,55 @@ th {
   justify-content: center;
   text-decoration: none;
   min-height: 48px;
+}
+
+/* Touch targets: 44×44px minimum (DESIGN.md). Kept last so earlier
+   per-screen rules cannot shrink these controls again. */
+.icon-btn,
+.sidebar .sidebar-close {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  flex-shrink: 0;
+}
+.sidebar nav button,
+.queue-tabs button,
+.scope-select select,
+.bottom-summary .secondary {
+  min-height: 44px;
+}
+.queue-tabs button {
+  min-width: 44px;
+}
+.top-tools > .profile-trigger {
+  width: 44px;
+  height: 44px;
+}
+.public-card .checkbox {
+  min-height: 44px;
+  align-items: center;
+  cursor: pointer;
+}
+.checkbox input[type='checkbox'] {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+/* Small phones: the larger header controls leave room for the current page
+   name only, so the "workspace" crumb is dropped rather than wrapping. */
+@media (max-width: 400px) {
+  .breadcrumb > span,
+  .breadcrumb > svg {
+    display: none;
+  }
+  .breadcrumb > b,
+  .demo-pill {
+    white-space: nowrap;
+  }
+}
+/* Phones: the case title gets the full width; its status badges wrap below it. */
+@media (max-width: 560px) {
+  .detail-summary .table-brand {
+    flex-basis: 100%;
+  }
 }
