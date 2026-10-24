@@ -13,3 +13,6 @@ test-results
 dist-worker
 
 **/.next-test
+
+# Vendored Claude skills/agents (third-party; not project source)
+.claude
