@@ -53,6 +53,7 @@
   },
   "overrides": {
     "deepmerge-ts": "8.0.0",
-    "effect": "^3.20.0"
+    "effect": "^3.20.0",
+    "multer": "2.5.0"
   }
 }
