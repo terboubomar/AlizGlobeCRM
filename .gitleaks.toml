@@ -1,0 +1,11 @@
+# Secret scanning config for gitleaks (used by CI).
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Vendored Claude skill docs contain example curl auth headers, not real credentials"
+paths = ['''^\.claude/''']
+
+[[allowlists]]
+description = "Test fixtures use obviously fake values prefixed with 'synthetic-'"
+regexes = ['''synthetic-[A-Za-z0-9-]+''']
