@@ -16,6 +16,33 @@ async function fits(page: Page) {
     await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
   ).toBeTruthy();
 }
+// DESIGN.md: 44×44px touch targets and 12px minimum text. Table cells and the
+// dev-only Next.js overlay are excluded.
+async function readable(page: Page) {
+  const problems = await page.evaluate(() => {
+    const out: string[] = [];
+    const visible = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
+    };
+    for (const el of document.querySelectorAll('button, a[href], input, select, textarea')) {
+      if (!visible(el) || el.closest('td, nextjs-portal, label')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 44 || r.height < 44)
+        out.push(
+          `target ${el.getAttribute('aria-label') ?? el.textContent?.trim()} ${Math.round(r.width)}x${Math.round(r.height)}`,
+        );
+    }
+    for (const el of document.querySelectorAll('body *')) {
+      if (!visible(el) || el.closest('nextjs-portal, .sr-only')) continue;
+      const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim());
+      if (own && parseFloat(getComputedStyle(el).fontSize) < 12)
+        out.push(`text ${el.textContent?.trim().slice(0, 20)} ${getComputedStyle(el).fontSize}`);
+    }
+    return out;
+  });
+  expect(problems).toEqual([]);
+}
 test('password sign-in, phone complaint persistence, and top-profile logout', async ({ page }) => {
   await signIn(page, 'lead@example.invalid');
   await page.getByRole('button', { name: 'تسجيل شكوى هاتفية', exact: true }).click();
@@ -61,6 +88,7 @@ test('manager overview with cases in scope fits the screen', async ({ page }) =>
   // table's scroll box instead of widening the page on phones.
   await expect(page.locator('.priority-panel table')).toBeVisible();
   await fits(page);
+  await readable(page);
 });
 test('QR complaint is branch-bound and private tracking contains the customer receipt', async ({
   page,
@@ -75,6 +103,7 @@ test('QR complaint is branch-bound and private tracking contains the customer re
   await page.getByRole('textbox', { name: 'شاركنا تفاصيل المشكلة', exact: true }).fill(detail);
   await page.getByRole('checkbox').check();
   await fits(page);
+  await readable(page);
   await page.getByRole('button', { name: 'إرسال البلاغ', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'تم استلام بلاغك', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'متابعة حالة البلاغ', exact: true }).click();

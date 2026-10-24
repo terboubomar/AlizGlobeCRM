@@ -57,6 +57,7 @@ import { rateLimit, trustedProxies, closeRateLimiter } from './rate-limit';
 import { upload, download, File } from './uploads';
 import { errorLogEntry } from './error-log';
 import { requestId, RequestWithId } from './request-id';
+import { errorKind, log, requestLog } from './log';
 import { decrypt, phoneHash } from './crypto';
 import { saveBrand, updateBranch, deleteDirectoryEntry, directoryStatusTx } from './directory';
 import { normalizePhone } from '../../../packages/domain/src';
@@ -557,6 +558,7 @@ async function main() {
     );
   app.getHttpAdapter().getInstance().set('trust proxy', proxies);
   app.use(requestId);
+  app.use(requestLog);
   app.use(helmet());
   app.use(cookieParser());
   app.use(
@@ -605,7 +607,7 @@ async function main() {
         const request = host.switchToHttp().getRequest<RequestWithId>();
         const entry = errorLogEntry(e, request, status, request.requestId);
         ref = entry.ref;
-        process.stderr.write(JSON.stringify(entry) + '\n');
+        log({ event: 'unhandled_error', ...entry });
       }
       return res.status(status).json({
         code: 'REQUEST_ERROR',
@@ -624,7 +626,8 @@ async function main() {
   };
   process.on('SIGTERM', stop);
 }
-main().catch(() => {
+main().catch((e: unknown) => {
+  log({ level: 'error', event: 'startup_failed', ...errorKind(e) });
   process.stderr.write('API startup failed. Check database and environment configuration.\n');
   process.exit(1);
 });
