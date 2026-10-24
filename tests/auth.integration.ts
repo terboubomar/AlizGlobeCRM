@@ -62,11 +62,20 @@ test(
       assert.ok(data.permissions.includes('brands.manage'));
       assert.ok(data.permissions.includes('users.manage'));
       assert.equal(data.brands.length, await db.brand.count());
-      await db.user.update({ where: { id: user.id }, data: { enabled: false } });
-      assert.equal((await fetch(base + 'session', { headers: { Cookie: cookie } })).status, 401);
+      // Logout revokes the session server-side: a copied cookie stops working.
       const logout = await post('logout', {}, cookie);
       assert.equal(logout.status, 201);
       assert.match(logout.headers.get('set-cookie')!, /Expires=/i);
+      assert.equal((await fetch(base + 'session', { headers: { Cookie: cookie } })).status, 401);
+      assert.equal(await db.audit.count({ where: { actor: user.id, action: 'SIGNED_OUT' } }), 1);
+      // Logging out again with the revoked cookie is harmless.
+      assert.equal((await post('logout', {}, cookie)).status, 201);
+      const relogin = await post('login', { email, password });
+      assert.equal(relogin.status, 201);
+      const fresh = relogin.headers.get('set-cookie')!.split(';')[0];
+      assert.equal((await fetch(base + 'session', { headers: { Cookie: fresh } })).status, 200);
+      await db.user.update({ where: { id: user.id }, data: { enabled: false } });
+      assert.equal((await fetch(base + 'session', { headers: { Cookie: fresh } })).status, 401);
       const unknown = `throttle-${randomUUID()}@example.invalid`;
       for (let i = 0; i < 5; i++)
         assert.equal((await post('login', { email: unknown, password })).status, 401);

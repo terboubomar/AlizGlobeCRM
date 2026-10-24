@@ -233,10 +233,14 @@ export async function applyWhatsAppStatus(
     }
 }
 export function verifyWhatsAppChallenge(query: Record<string, unknown>) {
+  const expected = process.env.WHATSAPP_VERIFY_TOKEN ?? '',
+    given = query['hub.verify_token'];
   if (
     query['hub.mode'] !== 'subscribe' ||
-    !process.env.WHATSAPP_VERIFY_TOKEN ||
-    query['hub.verify_token'] !== process.env.WHATSAPP_VERIFY_TOKEN ||
+    !expected ||
+    typeof given !== 'string' ||
+    Buffer.byteLength(given) !== Buffer.byteLength(expected) ||
+    !timingSafeEqual(Buffer.from(given), Buffer.from(expected)) ||
     typeof query['hub.challenge'] !== 'string'
   )
     throw new DomainError('FORBIDDEN', 403, 'غير مصرح');

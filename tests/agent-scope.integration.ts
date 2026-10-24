@@ -94,6 +94,25 @@ test('agents can find all scoped complaints while work ownership and refund priv
         }),
         0,
       );
+      // Roles without customer-data access cannot find complaints by phone
+      // number, though other search terms still work for them.
+      const branchManager = { ...a, id: 'branch-manager', role: 'BRANCH_MANAGER' };
+      for (const q of ['0500000001', '+966500000001'])
+        assert.equal(
+          await tx.ticket.count({
+            where: complaintSearchWhere(branchManager, complaintSearchInput.parse({ q })),
+          }),
+          0,
+        );
+      assert.equal(
+        await tx.ticket.count({
+          where: complaintSearchWhere(
+            branchManager,
+            complaintSearchInput.parse({ q: 'SEARCH-ORDER-123' }),
+          ),
+        }),
+        4,
+      );
       const ownRefund = await tx.refund.create({
         data: {
           brandId: id,

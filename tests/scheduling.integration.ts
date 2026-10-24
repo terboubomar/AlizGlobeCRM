@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { db } from '../packages/db/client';
-import { saveShiftTx, saveBulkShiftsTx } from '../apps/api/src/scheduling';
+import { saveShiftTx, saveBulkShiftsTx, reviewLeaveTx } from '../apps/api/src/scheduling';
 import type { Actor } from '../packages/domain/src';
 test('shared shifts enforce scope, ownership, breaks, leave and version conflicts', async () => {
   const id = 'schedule-check-' + randomUUID(),
@@ -139,6 +139,59 @@ test('shared shifts enforce scope, ownership, breaks, leave and version conflict
       (e) => e === rollback,
     );
     assert.equal(await db.user.count({ where: { id } }), 0);
+  } finally {
+    await db.$disconnect();
+  }
+});
+test('schedulers cannot approve their own leave', async () => {
+  const brand = 'leave-check-' + randomUUID(),
+    rollback = new Error('rollback leave verification');
+  const scheduler = (id: string): Actor => ({
+    id,
+    name: 'Scheduler',
+    role: 'SCHEDULER',
+    brandIds: [brand],
+    branchIds: [],
+  });
+  const self = scheduler(brand + '-self'),
+    other = scheduler(brand + '-other');
+  try {
+    await assert.rejects(
+      db.$transaction(async (tx) => {
+        for (const a of [self, other])
+          await tx.user.create({
+            data: { id: a.id, name: a.name, role: a.role, brandIds: [brand], branchIds: [] },
+          });
+        const request = (start: string, end: string) =>
+          tx.leave.create({
+            data: { userId: self.id, start: new Date(start), end: new Date(end) },
+          });
+        const own = await request('2030-02-01T00:00:00Z', '2030-02-02T00:00:00Z');
+        await assert.rejects(reviewLeaveTx(tx, self, own.id, 'approve'), {
+          status: 403,
+          code: 'SELF_APPROVAL',
+        });
+        assert.equal(
+          (await tx.leave.findUniqueOrThrow({ where: { id: own.id } })).status,
+          'REQUESTED',
+        );
+        await reviewLeaveTx(tx, other, own.id, 'approve');
+        assert.equal(
+          (await tx.leave.findUniqueOrThrow({ where: { id: own.id } })).status,
+          'APPROVED',
+        );
+        // Withdrawing (rejecting) your own request is still allowed.
+        const withdrawn = await request('2030-03-01T00:00:00Z', '2030-03-02T00:00:00Z');
+        await reviewLeaveTx(tx, self, withdrawn.id, 'reject');
+        assert.equal(
+          (await tx.leave.findUniqueOrThrow({ where: { id: withdrawn.id } })).status,
+          'REJECTED',
+        );
+        throw rollback;
+      }),
+      (e) => e === rollback,
+    );
+    assert.equal(await db.user.count({ where: { id: { in: [self.id, other.id] } } }), 0);
   } finally {
     await db.$disconnect();
   }
