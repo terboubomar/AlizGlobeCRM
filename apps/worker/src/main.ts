@@ -1,9 +1,11 @@
 import 'dotenv/config';
+process.env.LOG_SERVICE ??= 'worker';
 import { deliverConfirmations } from '../../api/src/whatsapp';
 import { deliverTelegram } from '../../api/src/telegram';
 import { Queue, Worker } from 'bullmq';
 import { db } from '../../../packages/db/client';
 import { retentionDays, retentionSweep } from '../../api/src/privacy';
+import { errorKind, log } from '../../api/src/log';
 export async function reconcile(now = new Date()) {
   const timers = await db.timer.findMany({
     where: { completedAt: null, warningAt: { lte: now }, ticket: { state: { not: 'CLOSED' } } },
@@ -54,16 +56,25 @@ async function main() {
       sending = true;
       try {
         const deliveries = await Promise.allSettled([deliverConfirmations(), deliverTelegram()]);
-        if (deliveries.some((result) => result.status === 'rejected'))
-          process.stderr.write('Notification delivery failed\n');
-      } catch {
-        process.stderr.write('Confirmation delivery failed\n');
+        for (const result of deliveries)
+          if (result.status === 'rejected')
+            log({
+              level: 'error',
+              event: 'job_failed',
+              job: 'delivery',
+              ...errorKind(result.reason),
+            });
+      } catch (e) {
+        log({ level: 'error', event: 'job_failed', job: 'delivery', ...errorKind(e) });
       } finally {
         sending = false;
       }
     }, 10000);
     const interval = setInterval(
-      () => reconcile().catch(() => process.stderr.write('Local SLA reconciliation failed\n')),
+      () =>
+        reconcile().catch((e: unknown) =>
+          log({ level: 'error', event: 'job_failed', job: 'reconcile', ...errorKind(e) }),
+        ),
       60000,
     );
     process.on('SIGTERM', () => {
@@ -108,15 +119,18 @@ async function main() {
     'sla',
     async (job) => {
       if (job.name === 'retention') {
-        if (keepDays !== null) await retentionSweep(keepDays);
+        if (keepDays !== null) {
+          const r = await retentionSweep(keepDays);
+          log({ level: 'info', event: 'retention_run', days: keepDays, ...r });
+        }
       } else if (job.name === 'confirmations') await deliverConfirmations();
       else if (job.name === 'telegram') await deliverTelegram();
       else await reconcile();
     },
     { connection },
   );
-  worker.on('failed', () =>
-    process.stderr.write('SLA reconciliation failed; retry on next reconciliation.\n'),
+  worker.on('failed', (job, e) =>
+    log({ level: 'error', event: 'job_failed', job: job?.name ?? 'unknown', ...errorKind(e) }),
   );
   await reconcile();
   async function stop() {
@@ -129,7 +143,8 @@ async function main() {
   process.on('SIGINT', stop);
 }
 if (process.env.NODE_ENV !== 'test')
-  main().catch(() => {
+  main().catch((e: unknown) => {
+    log({ level: 'error', event: 'startup_failed', ...errorKind(e) });
     process.stderr.write('Worker startup failed. Check Redis and PostgreSQL.\n');
     process.exit(1);
   });
