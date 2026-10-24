@@ -579,7 +579,7 @@ function Trend({ points, previous }: { points: Report['trend']; previous: Report
               stroke="#eae4de"
               strokeDasharray="4 5"
             />
-            <text x="4" y={y(max * r) + 4} fill="#6f645e" fontSize="11">
+            <text x="4" y={y(max * r) + 4} fill="#6f645e" fontSize="12">
               {n(Math.round(max * r))}
             </text>
           </g>
