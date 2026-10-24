@@ -192,6 +192,7 @@ export default function PublicIntake({ code }: { code: string }) {
                   <b>أرفق صورة للطلب (اختياري)</b>
                   <small>حتى 3 صور • 5 ميغابايت لكل صورة • JPG، PNG، WebP</small>
                   <input
+                    className="upload-input"
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     multiple
@@ -207,7 +208,14 @@ export default function PublicIntake({ code }: { code: string }) {
                       }
                     }}
                   />
-                  {files.length > 0 && <span>{files.length} صور مختارة</span>}
+                  {/* The browser's own picker text follows the phone's language, so the
+                      native control is visually hidden and this Arabic button stands in. */}
+                  <span className="upload-button" aria-hidden="true">
+                    اختر الصور
+                  </span>
+                  <span className="upload-files" aria-live="polite">
+                    {files.length ? files.map((f) => f.name).join('، ') : 'لم تُختر صور بعد'}
+                  </span>
                 </label>
                 <div className="public-privacy full">
                   <ShieldCheck size={19} />
