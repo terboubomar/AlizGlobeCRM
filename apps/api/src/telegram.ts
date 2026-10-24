@@ -7,6 +7,7 @@ import {
   authorize,
   DomainError,
   inScope,
+  permissionsForRole,
   supportRoles,
   categoryLabels,
 } from '../../../packages/domain/src';
@@ -198,8 +199,39 @@ export async function disconnectTelegramTx(tx: Tx, a: Actor) {
   await tx.audit.create({ data: { actor: a.id, action: 'TELEGRAM_DISCONNECTED', entityId: a.id } });
   return { ok: true };
 }
+// Outbox events that reach people through Telegram. NEW_TICKET is not here:
+// new complaints are queued for superadmins at intake (NEW_COMPLAINT).
+export const outboxAlertKinds = ['SLA_WARNING', 'SLA_BREACHED', 'SAFETY_INTAKE'] as const;
+type OutboxAlertKind = (typeof outboxAlertKinds)[number];
+const isOutboxAlert = (kind: string): kind is OutboxAlertKind =>
+  (outboxAlertKinds as readonly string[]).includes(kind);
+// Supervisors: may assign complaints and cover this brand/branch. Superadmins
+// are left out; they already receive every new complaint.
+function supervises(user: User, ticket: Ticket) {
+  return (
+    user.role !== 'SUPER_ADMIN' &&
+    permissionsForRole(user.role, user.financeDuty).includes('assign') &&
+    inScope(user, ticket)
+  );
+}
+function owns(user: User, ticket: Ticket) {
+  return (
+    !!ticket.resolutionOwner &&
+    user.id === ticket.resolutionOwner &&
+    supportRoles.includes(user.role) &&
+    inScope(user, ticket)
+  );
+}
 export function eligibleTelegramRecipient(user: User, ticket: Ticket, kind: string) {
   if (!user.enabled) return false;
+  if (isOutboxAlert(kind)) {
+    if (ticket.state === 'CLOSED') return false;
+    if (kind === 'SAFETY_INTAKE') return supervises(user, ticket);
+    // A deadline about to pass goes to the owner; unassigned, to the supervisors.
+    if (kind === 'SLA_WARNING')
+      return ticket.resolutionOwner ? owns(user, ticket) : supervises(user, ticket);
+    return owns(user, ticket) || supervises(user, ticket);
+  }
   if (kind === 'NEW_COMPLAINT') return user.role === 'SUPER_ADMIN';
   return (
     kind === 'ASSIGNED' &&
@@ -244,6 +276,63 @@ export async function queueTelegramTx(
     });
   }
 }
+/**
+ * Turns pending outbox events into Telegram alerts for the people they concern.
+ * Each event is claimed once (deliveredAt); events older than a day are closed
+ * without sending so enabling Telegram later does not replay stale alerts.
+ * Does nothing while Telegram is not configured.
+ */
+export async function routeOutboxTx(tx: Tx, now = new Date(), limit = 50) {
+  if (!telegramConfig().ready) return { routed: 0, queued: 0 };
+  const rows = await tx.outbox.findMany({
+    where: { deliveredAt: null },
+    orderBy: { createdAt: 'asc' },
+    take: limit,
+  });
+  if (!rows.length) return { routed: 0, queued: 0 };
+  const users = await tx.user.findMany({
+    where: { enabled: true, telegram: { is: { linkedAt: { not: null } } } },
+    include: { telegram: true },
+  });
+  let queued = 0;
+  for (const row of rows) {
+    const claimed = await tx.outbox.updateMany({
+      where: { id: row.id, deliveredAt: null },
+      data: { deliveredAt: now },
+    });
+    if (!claimed.count || !isOutboxAlert(row.type) || +row.createdAt < +now - 86400000) continue;
+    const ticket = await tx.ticket.findUnique({ where: { id: row.ticketId } });
+    if (!ticket) continue;
+    for (const user of users) {
+      if (!user.telegram?.chatHash || !eligibleTelegramRecipient(user, ticket, row.type)) continue;
+      const key = `${row.type}:${row.id}:${user.id}`;
+      await tx.telegramNotification.upsert({
+        where: { key },
+        update: {},
+        create: {
+          key,
+          ticketId: ticket.id,
+          userId: user.id,
+          connectionHash: user.telegram.chatHash,
+          kind: row.type,
+          expiresAt: new Date(+now + 86400000),
+        },
+      });
+      queued++;
+    }
+  }
+  return { routed: rows.length, queued };
+}
+export function routeOutbox(now = new Date()) {
+  return db.$transaction((tx) => routeOutboxTx(tx, now));
+}
+const alertTitle: Record<string, string> = {
+  NEW_COMPLAINT: 'شكوى جديدة تحتاج إلى إسناد',
+  ASSIGNED: 'تم إسناد شكوى إليك',
+  SLA_WARNING: 'تنبيه: شكوى تقترب من تجاوز المهلة',
+  SLA_BREACHED: 'شكوى تجاوزت المهلة وتحتاج إلى متابعة',
+  SAFETY_INTAKE: 'شكوى عاجلة (P1) تحتاج إلى متابعة فورية',
+};
 export function telegramMessage(
   ticket: Ticket & { brand: { name: string }; branch: { name: string } | null },
   kind: string,
@@ -256,7 +345,7 @@ export function telegramMessage(
   return {
     chat_id: chatId,
     text: [
-      kind === 'NEW_COMPLAINT' ? 'شكوى جديدة تحتاج إلى إسناد' : 'تم إسناد شكوى إليك',
+      alertTitle[kind] ?? alertTitle.ASSIGNED,
       number,
       `العلامة: ${ticket.brand.name.slice(0, 100)}`,
       `الفرع: ${ticket.branch?.name.slice(0, 100) ?? 'غير محدد'}`,
