@@ -85,6 +85,8 @@ model Ticket {
   slaPolicy Json?
   escalated Boolean @default(false)
   demo Boolean @default(false)
+  legalHold Boolean @default(false)
+  erasedAt DateTime?
   events Event[]
   timers Timer[]
   refunds Refund[]
@@ -96,6 +98,7 @@ model Ticket {
   @@unique([id,brandId])
   @@index([brandId,branchId,state])
   @@index([phoneHash])
+  @@index([state, closedAt])
 }
 model Event {
   id String @id @default(uuid())

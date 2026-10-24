@@ -29,6 +29,8 @@ services:
       DATABASE_URL: postgresql://aliz:${POSTGRES_PASSWORD:-localdev}@postgres:5432/aliz
       NODE_ENV: development
     command: ['sh', '-c', 'npm run db:migrate && npm run db:seed:demo']
+    # Mounted so `npm run privacy -- erase` can delete a customer's photos.
+    volumes: ['uploads:/app/.data/uploads']
     depends_on:
       postgres: { condition: service_healthy }
   api:
