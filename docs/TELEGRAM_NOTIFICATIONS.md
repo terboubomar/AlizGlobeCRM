@@ -7,6 +7,16 @@
 - A new assignment queues a private alert for the assigned support employee. Reassignments notify the new employee; obsolete queued notifications are cancelled at delivery. Reassigning to the same employee does not send another alert.
 - Telegram does not grant CRM access. All complaint details and assignment actions require an authenticated CRM session and the existing role/scope permissions. Customer names, phones, full descriptions, internal notes, attachments and public customer tracking tokens are not sent to Telegram.
 
+- Deadline and urgent-case events are delivered too. The worker turns each pending outbox event into alerts once, within a day of the event (older events are closed without sending, so turning Telegram on later does not replay them):
+
+  | Event                          | Recipients                                                                                                                 |
+  | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+  | Deadline about to pass         | The assigned support employee; if unassigned, the supervisors (roles that can assign complaints) covering the brand/branch |
+  | Deadline missed                | The assigned support employee and those supervisors                                                                        |
+  | Urgent (P1) complaint received | Those supervisors. Superadmins already receive every new complaint.                                                        |
+
+  Closed cases get no deadline alerts, and eligibility is checked again when each message is sent. The routing follows today's roles until the after-hours P1 owner is decided (D04 in [DECISIONS.md](DECISIONS.md)).
+
 ## Configure
 
 1. Create your company bot using the official [@BotFather](https://t.me/BotFather). Store the token in the server environment as `TELEGRAM_BOT_TOKEN`; set `TELEGRAM_BOT_USERNAME` without `@`. Never put the token in source control, screenshots or chat.

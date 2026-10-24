@@ -1,7 +1,7 @@
 import 'dotenv/config';
 process.env.LOG_SERVICE ??= 'worker';
 import { deliverConfirmations } from '../../api/src/whatsapp';
-import { deliverTelegram } from '../../api/src/telegram';
+import { deliverTelegram, routeOutbox } from '../../api/src/telegram';
 import { Queue, Worker } from 'bullmq';
 import { db } from '../../../packages/db/client';
 import { retentionDays, retentionSweep } from '../../api/src/privacy';
@@ -55,7 +55,10 @@ async function main() {
       if (sending) return;
       sending = true;
       try {
-        const deliveries = await Promise.allSettled([deliverConfirmations(), deliverTelegram()]);
+        const deliveries = await Promise.allSettled([
+          deliverConfirmations(),
+          routeOutbox().then(() => deliverTelegram()),
+        ]);
         for (const result of deliveries)
           if (result.status === 'rejected')
             log({
@@ -124,8 +127,10 @@ async function main() {
           log({ level: 'info', event: 'retention_run', days: keepDays, ...r });
         }
       } else if (job.name === 'confirmations') await deliverConfirmations();
-      else if (job.name === 'telegram') await deliverTelegram();
-      else await reconcile();
+      else if (job.name === 'telegram') {
+        await routeOutbox();
+        await deliverTelegram();
+      } else await reconcile();
     },
     { connection },
   );
