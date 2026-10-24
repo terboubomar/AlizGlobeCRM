@@ -150,7 +150,7 @@ async function main() {
     const fixtureDb = new PrismaClient({ datasources: { db: { url: env.DATABASE_URL! } } });
     try {
       const passwordHash = await hashPassword(env.TEST_LOGIN_PASSWORD);
-      for (const id of ['lead', 'admin'])
+      for (const id of ['lead', 'admin', 'support-manager'])
         await fixtureDb.user.update({
           where: { id },
           data: { email: `${id}@example.invalid`, passwordHash },
