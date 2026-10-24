@@ -49,7 +49,7 @@
     "prettier": "^3.9.10",
     "prisma": "6.19.3",
     "tsx": "^4.20.0",
-    "typescript": "^5.9.0",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.46.0"
   },
   "overrides": {
