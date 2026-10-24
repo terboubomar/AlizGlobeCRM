@@ -3,6 +3,7 @@ import { deliverConfirmations } from '../../api/src/whatsapp';
 import { deliverTelegram } from '../../api/src/telegram';
 import { Queue, Worker } from 'bullmq';
 import { db } from '../../../packages/db/client';
+import { retentionDays, retentionSweep } from '../../api/src/privacy';
 export async function reconcile(now = new Date()) {
   const timers = await db.timer.findMany({
     where: { completedAt: null, warningAt: { lte: now }, ticket: { state: { not: 'CLOSED' } } },
@@ -94,10 +95,21 @@ async function main() {
     { every: 10000 },
     { name: 'telegram', data: {}, opts: { removeOnComplete: 10, removeOnFail: 50 } },
   );
+  // Retention runs only when a period is configured (and, in production, approved).
+  const keepDays = retentionDays();
+  if (keepDays === null) await queue.removeJobScheduler('retention-daily');
+  else
+    await queue.upsertJobScheduler(
+      'retention-daily',
+      { every: 86400000 },
+      { name: 'retention', data: {}, opts: { removeOnComplete: 10, removeOnFail: 50 } },
+    );
   const worker = new Worker(
     'sla',
     async (job) => {
-      if (job.name === 'confirmations') await deliverConfirmations();
+      if (job.name === 'retention') {
+        if (keepDays !== null) await retentionSweep(keepDays);
+      } else if (job.name === 'confirmations') await deliverConfirmations();
       else if (job.name === 'telegram') await deliverTelegram();
       else await reconcile();
     },
