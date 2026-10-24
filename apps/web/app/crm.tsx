@@ -42,6 +42,7 @@ import {
   date,
   n,
   risk,
+  summaryFor,
 } from './types';
 import { Modal, Empty, Submit, Field } from './ui';
 import { ComplaintsWorkspace, ComplaintJourney } from './complaints';
@@ -338,7 +339,9 @@ export default function CRM() {
                   {items.map((item) => {
                     const Icon = item.icon;
                     const active = view === item.id;
-                    const openCount = data.tickets.filter((t) => t.state !== 'CLOSED').length;
+                    const exactOpen = summaryFor(data.ticketSummary, 'all')?.active;
+                    const openCount =
+                      exactOpen ?? data.tickets.filter((t) => t.state !== 'CLOSED').length;
                     return (
                       <button
                         key={item.id}
@@ -355,7 +358,7 @@ export default function CRM() {
                         </span>
                         {item.id === 'tickets' &&
                           openCount > 0 &&
-                          data.ticketCount === data.tickets.length && (
+                          (exactOpen !== undefined || data.ticketCount === data.tickets.length) && (
                             <small
                               className="nav-count"
                               aria-label={`${n(openCount)} شكاوى مفتوحة`}
