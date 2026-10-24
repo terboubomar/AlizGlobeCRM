@@ -1,0 +1,3 @@
+# Accepted container vulnerabilities, one CVE ID per line, for the CI image scan.
+# Each entry needs a comment: why it does not apply or cannot be fixed yet,
+# who accepted it, and when to look again.
