@@ -456,6 +456,18 @@ test(
         ).status,
         400,
       );
+      // Files over the 5 MB limit are refused with 413 and a size message.
+      const oversized = new Uint8Array(5 * 1024 * 1024 + 1);
+      oversized.set([137, 80, 78, 71, 13, 10, 26, 10]);
+      const big = new FormData();
+      big.append('files', new Blob([oversized], { type: 'image/png' }), 'big.png');
+      const tooLarge = await fetch(base + `tickets/${refundTicket}/attachments`, {
+        method: 'POST',
+        headers: { Cookie: processor },
+        body: big,
+      });
+      assert.equal(tooLarge.status, 413);
+      assert.equal((await tooLarge.json()).message, 'حجم الملف أكبر من المسموح');
       const image = await sharp({
         create: { width: 10, height: 10, channels: 3, background: '#fff' },
       })
