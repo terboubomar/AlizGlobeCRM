@@ -42,6 +42,26 @@ test('password sign-in, phone complaint persistence, and top-profile logout', as
   await expect(page.getByRole('heading', { name: 'تسجيل الدخول', exact: true })).toBeVisible();
   expect((await page.request.get('/api/session')).status()).toBe(401);
 });
+test('manager overview with cases in scope fits the screen', async ({ page }) => {
+  await signIn(page, 'lead@example.invalid');
+  const created = await page.request.post('/api/tickets/phone', {
+    headers: { 'idempotency-key': `browser-fit-${Date.now()}-${Math.random()}` },
+    data: {
+      brandId: 'waqf',
+      branchId: 'demo-waqf-1',
+      category: 'DELAY',
+      priority: 'P2',
+      description: 'حالة اختبار متصفح اصطناعية لعرض قائمة الأولوية.',
+    },
+  });
+  expect(created.ok()).toBeTruthy();
+  await page.context().clearCookies();
+  await signIn(page, 'support-manager@example.invalid');
+  // The priority table holds a visually hidden header label; it must stay inside the
+  // table's scroll box instead of widening the page on phones.
+  await expect(page.locator('.priority-panel table')).toBeVisible();
+  await fits(page);
+});
 test('QR complaint is branch-bound and private tracking contains the customer receipt', async ({
   page,
 }) => {
