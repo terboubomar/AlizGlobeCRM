@@ -10,6 +10,8 @@ server {
     ssl_certificate_key /etc/ssl/crm/privkey.pem;
     access_log /var/log/nginx/crm-access.log crm_no_query;
     client_max_body_size 16m;
+    # HTTPS only from now on; the web app also sends this once APP_ORIGIN is https.
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
     location /api/ {
         proxy_pass http://api:4000;
         proxy_set_header Host $host;

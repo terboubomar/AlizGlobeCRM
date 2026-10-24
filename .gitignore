@@ -16,3 +16,6 @@ output/
 *.dump
 
 **/.next-test
+
+# impeccable design-hook runtime cache
+.impeccable/
