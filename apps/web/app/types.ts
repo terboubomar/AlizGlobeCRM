@@ -126,6 +126,8 @@ export type Data = {
   users: User[];
   tickets: Ticket[];
   ticketCount: number;
+  // Exact dashboard counts per brand over the whole scope (tickets is capped).
+  ticketSummary?: Record<string, SummaryCounts>;
   refunds: Refund[];
   tasks: Task[];
   shifts: Shift[];
@@ -247,6 +249,43 @@ export const date = (s: string) =>
     timeZone: 'Asia/Riyadh',
   }).format(new Date(s));
 export const n = (v: number) => v.toLocaleString('ar-SA-u-nu-latn');
+export type SummaryCounts = {
+  active: number;
+  closed: number;
+  followup: number;
+  waiting: number;
+  escalated: number;
+  late: number;
+  urgent: number;
+};
+const noCounts: SummaryCounts = {
+  active: 0,
+  closed: 0,
+  followup: 0,
+  waiting: 0,
+  escalated: 0,
+  late: 0,
+  urgent: 0,
+};
+// Server counts for one brand, or all brands summed; null when the server
+// sent none, so callers fall back to counting the loaded cases.
+export function summaryFor(
+  summary: Record<string, SummaryCounts> | undefined,
+  brand: string,
+): SummaryCounts | null {
+  if (!summary) return null;
+  const rows = brand === 'all' ? Object.values(summary) : [summary[brand] ?? noCounts];
+  return rows.reduce(
+    (total, row) =>
+      Object.fromEntries(
+        Object.keys(noCounts).map((k) => [
+          k,
+          total[k as keyof SummaryCounts] + row[k as keyof SummaryCounts],
+        ]),
+      ) as SummaryCounts,
+    noCounts,
+  );
+}
 export function risk(t: Ticket) {
   const pending = t.timers.filter((x) => !x.completedAt);
   return pending.some((x) => +new Date(x.dueAt) < Date.now())

@@ -27,6 +27,7 @@ import { encrypt, decrypt, hash, token, phoneHash } from './crypto';
 import { isDemo, passwordAuthEnabled } from './auth';
 import { listRefunds } from './refunds';
 import { ticketScope } from './ticket-scope';
+import { ticketSummary } from './ticket-summary';
 type Tx = Prisma.TransactionClient;
 export const num = (t: { sequence: number; createdAt: Date }) =>
   `AG-${t.createdAt.getUTCFullYear()}-${String(t.sequence).padStart(6, '0')}`;
@@ -125,6 +126,7 @@ export async function bootstrap(a: Actor) {
       })
     : [];
   const ticketCount = can(a, 'read') ? await db.ticket.count({ where: scope(a) }) : 0;
+  const summary = can(a, 'read') ? await ticketSummary(db, a) : {};
   if (can(a, 'pii'))
     await db.audit.create({
       data: { actor: a.id, action: 'SCOPED_PII_READ', entityId: 'BOOTSTRAP' },
@@ -156,6 +158,7 @@ export async function bootstrap(a: Actor) {
     users,
     tickets: tickets.map((t) => present(t, a)),
     ticketCount,
+    ticketSummary: summary,
     refunds: await listRefunds(a),
     tasks,
     shifts: can(a, 'schedule') || can(a, 'schedule.self') ? shifts : [],

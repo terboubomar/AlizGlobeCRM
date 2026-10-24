@@ -101,3 +101,27 @@ test('agents can create and track refunds without financial approval controls', 
     ),
   );
 });
+test('dashboard tiles use exact server counts, not the capped case list', async () => {
+  const { summaryFor } = await import('../app/types');
+  const counts = (active: number) => ({
+    active,
+    closed: 3,
+    followup: 2,
+    waiting: 4,
+    escalated: 1,
+    late: 5,
+    urgent: 6,
+  });
+  const summary = { brand: counts(742), other: counts(8) };
+  assert.equal(summaryFor(summary, 'all')?.active, 750);
+  assert.equal(summaryFor(summary, 'brand')?.active, 742);
+  assert.equal(summaryFor(summary, 'missing')?.active, 0);
+  assert.equal(summaryFor(undefined, 'all'), null);
+  // No cases loaded at all, yet the tiles must show the scope-wide totals.
+  const data = { ...dataFor('SHIFT_LEAD'), ticketSummary: summary, ticketCount: 750 };
+  const html = renderToStaticMarkup(
+    <RoleWorkspace data={data} brand="brand" onOpen={() => {}} onNavigate={() => {}} />,
+  );
+  assert.match(html, />742</);
+  assert.doesNotMatch(html, />750</);
+});

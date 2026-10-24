@@ -1,7 +1,17 @@
 'use client';
 import { useState } from 'react';
 import { ArrowLeft, Search, Users, Building2, QrCode, Wallet } from 'lucide-react';
-import { Data, Ticket, categories, date, n, states, risk } from './types';
+import {
+  Data,
+  SummaryCounts,
+  Ticket,
+  categories,
+  date,
+  n,
+  states,
+  risk,
+  summaryFor,
+} from './types';
 import { Empty } from './ui';
 const unassigned = (t: Ticket) => !t.resolutionOwner || t.resolutionOwner === t.branchId;
 const finished = (status: string) => ['COMPLETED', 'REJECTED'].includes(status);
@@ -39,6 +49,9 @@ export function RoleWorkspace({
     waiting = active.filter(unassigned),
     escalated = active.filter((t) => t.escalated),
     late = active.filter((t) => risk(t) === 'late');
+  // Exact counts from the server; the loaded cases are only the latest 500.
+  const counts = summaryFor(data.ticketSummary, brand);
+  const count = (bucket: keyof SummaryCounts, loaded: number) => counts?.[bucket] ?? loaded;
   const visible = cases
     .filter(
       (t) =>
@@ -70,29 +83,38 @@ export function RoleWorkspace({
     );
   const metrics = operations
     ? [
-        { label: 'تصعيدات مفتوحة', value: active.length, key: 'open' },
+        { label: 'تصعيدات مفتوحة', value: count('active', active.length), key: 'open' },
         {
           label: 'حرجة أو متأخرة',
-          value: active.filter((t) => t.priority === 'P1' || risk(t) === 'late').length,
+          value: count(
+            'urgent',
+            active.filter((t) => t.priority === 'P1' || risk(t) === 'late').length,
+          ),
           key: 'urgent',
         },
-        { label: 'جاهزة لتواصل الدعم', value: followup.length, key: 'contact' },
-        { label: 'تم الحل', value: closed.length, key: 'closed' },
+        { label: 'جاهزة لتواصل الدعم', value: count('followup', followup.length), key: 'contact' },
+        { label: 'تم الحل', value: count('closed', closed.length), key: 'closed' },
       ]
     : lead
       ? [
-          { label: 'بانتظار الإسناد', value: waiting.length, key: 'waiting' },
-          { label: 'شكاوى مفتوحة', value: active.length, key: 'open' },
-          { label: 'بانتظار التواصل', value: followup.length, key: 'contact' },
-          { label: 'تحتاج تدخلك', value: escalated.length, key: 'escalated' },
+          { label: 'بانتظار الإسناد', value: count('waiting', waiting.length), key: 'waiting' },
+          { label: 'شكاوى مفتوحة', value: count('active', active.length), key: 'open' },
+          { label: 'بانتظار التواصل', value: count('followup', followup.length), key: 'contact' },
+          { label: 'تحتاج تدخلك', value: count('escalated', escalated.length), key: 'escalated' },
         ]
       : [
-          { label: 'شكاوى مفتوحة', value: active.length, key: 'open' },
-          { label: 'تم الحل', value: closed.length, key: 'closed' },
-          { label: 'تصعيدات مفتوحة', value: escalated.length, key: 'escalated' },
+          { label: 'شكاوى مفتوحة', value: count('active', active.length), key: 'open' },
+          { label: 'تم الحل', value: count('closed', closed.length), key: 'closed' },
+          {
+            label: 'تصعيدات مفتوحة',
+            value: count('escalated', escalated.length),
+            key: 'escalated',
+          },
           {
             label: executive ? 'طلبات استرجاع قيد المتابعة' : 'حالات متأخرة',
-            value: executive ? refunds.filter((r) => !finished(r.status)).length : late.length,
+            value: executive
+              ? refunds.filter((r) => !finished(r.status)).length
+              : count('late', late.length),
             key: executive ? 'refunds' : 'late',
           },
         ];
