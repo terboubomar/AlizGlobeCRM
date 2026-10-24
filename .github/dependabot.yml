@@ -13,6 +13,10 @@ updates:
         update-types: [version-update:semver-major]
       - dependency-name: '@prisma/client'
         update-types: [version-update:semver-major]
+      # Type definitions follow the Node version we run (22, in the Dockerfile
+      # and CI). Raise this together with that version, not on its own.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
     groups:
       npm-minor-and-patch:
         update-types: [minor, patch]
