@@ -30,6 +30,12 @@ RUN npm ci --omit=dev --workspaces=false --ignore-scripts && npm cache clean --f
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 
 FROM base AS server
+# Runtime images start node directly; the package managers bundled with the
+# base image (npm, yarn, corepack) are not needed and carry their own
+# vulnerable dependencies, so they are removed.
+RUN rm -rf /usr/local/lib/node_modules /opt/yarn-* \
+      /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+      /usr/local/bin/yarn /usr/local/bin/yarnpkg
 COPY --from=server-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/package.json ./package.json
 COPY --from=build --chown=node:node /app/apps/api/dist ./apps/api/dist
@@ -41,6 +47,12 @@ CMD ["node", "apps/api/dist/apps/api/src/main.js"]
 
 FROM node:22-bookworm-slim AS web
 WORKDIR /app
+# Runtime images start node directly; the package managers bundled with the
+# base image (npm, yarn, corepack) are not needed and carry their own
+# vulnerable dependencies, so they are removed.
+RUN rm -rf /usr/local/lib/node_modules /opt/yarn-* \
+      /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+      /usr/local/bin/yarn /usr/local/bin/yarnpkg
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
 COPY --from=build --chown=node:node /app/apps/web/.next/standalone ./
 COPY --from=build --chown=node:node /app/apps/web/.next/static ./apps/web/.next/static

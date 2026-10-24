@@ -79,6 +79,11 @@ jobs:
   containers:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # 0.69.4 was a malicious release (CVE-2026-33634); 0.69.3 is known safe.
+      # Change version and checksum together, from the release's checksums file.
+      TRIVY_VERSION: 0.69.3
+      TRIVY_SHA256: 1816b632dfe529869c740c0913e36bd1629cb7688bd5634f4a858c1d57c88b75
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -102,6 +107,24 @@ jobs:
           test "$(docker compose ps --all --format '{{.ExitCode}}' setup)" = 0
       - name: Image sizes
         run: docker image ls --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep -i aliz
+      - name: Install Trivy (checksum-verified)
+        run: |
+          curl -sSL -o trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum -c -
+          tar xzf trivy.tgz trivy
+      # The images that ship: API/worker (server target) and web. Fails on
+      # high or critical vulnerabilities that have a fix available; accepted
+      # exceptions go in .trivyignore with a reason and a review date.
+      - name: Scan shipped images for known vulnerabilities
+        run: |
+          images=$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E 'aliz[^/]*-(api|web):' | sort -u)
+          test "$(echo "$images" | wc -l)" = 2
+          for image in $images; do
+            echo "::group::$image"
+            ./trivy image --scanners vuln --ignore-unfixed --severity HIGH,CRITICAL \
+              --ignorefile .trivyignore --exit-code 1 --no-progress "$image"
+            echo "::endgroup::"
+          done
       - name: Show logs on failure
         if: failure()
         run: docker compose --profile app logs --no-color
