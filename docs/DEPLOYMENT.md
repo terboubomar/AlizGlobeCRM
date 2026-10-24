@@ -18,4 +18,6 @@ Deploy immutable container revisions behind a TLS gateway. Retain the last known
 
 ## Production controls still required
 
-Distributed per-source rate limiting; correlation IDs and redacted centralized logs; OTel/Sentry; outbox recipient delivery; managed object-storage signed URLs; automated retention/legal holds and rights requests; actual IdP SSO; approved financial/SLA policy snapshots; business calendars and on-call coverage; secret/image/dependency scans; independent accessibility/security/UAT sign-off.
+Redacted centralized logs and OTel/Sentry; outbox recipient delivery; managed object-storage signed URLs and a deployed malware scanner; automated retention/legal holds and rights requests; actual IdP SSO; approved financial/SLA policy snapshots; business calendars and on-call coverage; container image CVE scanning; independent accessibility/security/UAT sign-off.
+
+Already in place: Redis-backed per-source rate limiting across API instances (fails closed), request IDs on every API response and in error logs, secret scanning of full history, `npm audit` and Dependabot for dependencies, and a CI container smoke test.
