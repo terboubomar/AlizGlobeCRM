@@ -112,6 +112,35 @@ export async function actor(req: Request) {
   };
 }
 
+// Logout must revoke the session, not just clear the browser cookie, or a copied
+// cookie keeps working until it expires. Bumping sessionVersion invalidates every
+// session issued to this user (actor() rejects a mismatched version), so signing
+// out also signs the user out on their other devices.
+export async function endStaffSession(req: Request) {
+  if (!passwordAuthEnabled() && isDemo()) return;
+  const cookie = req.cookies?.aliz_session;
+  if (!cookie) return;
+  let sub: string | undefined, sessionVersion: number;
+  try {
+    const { payload } = await jwtVerify(cookie, sessionKey(), {
+      algorithms: ['HS256'],
+      issuer: 'aliz-crm',
+      audience: 'aliz-crm-web',
+    });
+    sub = payload.sub;
+    sessionVersion = typeof payload.sv === 'number' ? payload.sv : 0;
+  } catch {
+    return; // Invalid or expired: nothing left to revoke.
+  }
+  if (!sub) return;
+  const revoked = await db.user.updateMany({
+    where: { id: sub, sessionVersion },
+    data: { sessionVersion: { increment: 1 } },
+  });
+  if (revoked.count)
+    await db.audit.create({ data: { actor: sub, action: 'SIGNED_OUT', entityId: sub } });
+}
+
 export const passwordAuthEnabled = () =>
   process.env.LOCAL_PASSWORD_AUTH === 'true' && process.env.NODE_ENV !== 'production';
 const failures = new Map<string, { count: number; until: number }>();

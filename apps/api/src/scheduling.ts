@@ -136,6 +136,49 @@ export async function cancelShift(a: Actor, id: string, input: unknown) {
   });
 }
 
+export async function reviewLeaveTx(
+  tx: Prisma.TransactionClient,
+  a: Actor,
+  id: string,
+  action: string,
+) {
+  authorize(a, 'schedule');
+  if (!['approve', 'reject'].includes(action))
+    throw new DomainError('INVALID_ACTION', 400, 'إجراء غير صالح');
+  let l = await tx.leave.findUnique({ where: { id } });
+  const u = l ? await tx.user.findUnique({ where: { id: l.userId } }) : null;
+  if (!l || !u || !u.brandIds.some((b) => a.brandIds.includes(b)))
+    throw new DomainError('NOT_FOUND', 404, 'غير متاح');
+  // Separation of duties: schedulers may withdraw (reject) their own request
+  // but another scheduler must approve it.
+  if (action === 'approve' && l.userId === a.id)
+    throw new DomainError('SELF_APPROVAL', 403, 'لا يمكنك اعتماد إجازتك؛ يعتمدها مسؤول جدولة آخر.');
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${l.userId}))`;
+  l = await tx.leave.findUnique({ where: { id } });
+  if (!l || l.status !== 'REQUESTED')
+    throw new DomainError('CONFLICT', 409, 'تمت مراجعة الطلب بالفعل.');
+  if (
+    action === 'approve' &&
+    (await tx.shift.count({
+      where: {
+        userId: l.userId,
+        cancelledAt: null,
+        start: { lt: l.end },
+        end: { gt: l.start },
+      },
+    }))
+  )
+    throw new DomainError('SHIFT_CONFLICT', 409, 'توجد ورديات تتعارض مع الإجازة');
+  await tx.leave.update({
+    where: { id },
+    data: { status: action === 'approve' ? 'APPROVED' : 'REJECTED' },
+  });
+  await tx.audit.create({
+    data: { actor: a.id, action: 'LEAVE_' + action.toUpperCase(), entityId: id },
+  });
+  return { ok: true };
+}
+
 export const bulkShiftInput = z.object({ entries: z.array(shiftInput).min(1).max(200) });
 export async function saveBulkShiftsTx(tx: Prisma.TransactionClient, a: Actor, input: unknown) {
   authorize(a, 'schedule');

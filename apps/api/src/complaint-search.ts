@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { db } from '../../../packages/db/client';
-import { Actor, authorize, normalizePhone } from '../../../packages/domain/src';
+import { Actor, authorize, can, normalizePhone } from '../../../packages/domain/src';
 import { ticketScope } from './ticket-scope';
 import { phoneHash } from './crypto';
 import { include, present } from './service';
@@ -55,8 +55,10 @@ export function complaintSearchWhere(
         },
       });
     } else if (/^\d{1,9}$/.test(b.q)) or.push({ sequence: Number(b.q) });
+    // Matching a customer's phone number reveals who complained, so only roles
+    // allowed to see customer data may search by it.
     const phone = normalizePhone(b.q);
-    if (/^9665\d{8}$/.test(phone)) or.push({ phoneHash: phoneHash(phone) });
+    if (can(a, 'pii') && /^9665\d{8}$/.test(phone)) or.push({ phoneHash: phoneHash(phone) });
     clauses.push({ OR: or });
   }
   return { AND: clauses };

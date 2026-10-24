@@ -14,7 +14,7 @@ import {
   disconnectTelegramTx,
   validTelegramSecret,
 } from './telegram';
-import { saveShift, cancelShift, saveBulkShifts } from './scheduling';
+import { saveShift, cancelShift, saveBulkShifts, reviewLeaveTx } from './scheduling';
 import 'dotenv/config';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
@@ -41,7 +41,14 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { db } from '../../../packages/db/client';
 import { authorize, can, DomainError } from '../../../packages/domain/src';
-import { actor, demoSession, isDemo, passwordAuthEnabled, passwordSession } from './auth';
+import {
+  actor,
+  demoSession,
+  endStaffSession,
+  isDemo,
+  passwordAuthEnabled,
+  passwordSession,
+} from './auth';
 import * as service from './service';
 import { searchComplaints } from './complaint-search';
 import { listUsers, saveUser, userStatus } from './users';
@@ -161,7 +168,8 @@ class Api {
     });
     return { ok: true };
   }
-  @Post('logout') logout(@Res({ passthrough: true }) res: Response) {
+  @Post('logout') async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    await endStaffSession(req);
     res.clearCookie('aliz_session', { path: '/' });
     return { ok: true };
   }
@@ -312,37 +320,7 @@ class Api {
     @Param('action') action: string,
   ) {
     const a = await actor(req);
-    authorize(a, 'schedule');
-    if (!['approve', 'reject'].includes(action))
-      throw new DomainError('INVALID_ACTION', 400, 'إجراء غير صالح');
-    return db.$transaction(async (tx) => {
-      let l = await tx.leave.findUnique({ where: { id } });
-      const u = l ? await tx.user.findUnique({ where: { id: l.userId } }) : null;
-      if (!l || !u || !u.brandIds.some((b) => a.brandIds.includes(b)))
-        throw new DomainError('NOT_FOUND', 404, 'غير متاح');
-      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${l.userId}))`;
-      l = await tx.leave.findUnique({ where: { id } });
-      if (!l || l.status !== 'REQUESTED')
-        throw new DomainError('CONFLICT', 409, 'تمت مراجعة الطلب بالفعل.');
-      if (
-        action === 'approve' &&
-        (await tx.shift.count({
-          where: {
-            userId: l.userId,
-            cancelledAt: null,
-            start: { lt: l.end },
-            end: { gt: l.start },
-          },
-        }))
-      )
-        throw new DomainError('SHIFT_CONFLICT', 409, 'توجد ورديات تتعارض مع الإجازة');
-      await tx.leave.update({
-        where: { id },
-        data: { status: action === 'approve' ? 'APPROVED' : 'REJECTED' },
-      });
-      await service.audit(tx, a, 'LEAVE_' + action.toUpperCase(), id);
-      return { ok: true };
-    });
+    return db.$transaction((tx) => reviewLeaveTx(tx, a, id, action));
   }
   @Get('qrs') async qrs(@Req() req: Request) {
     const a = await actor(req);
