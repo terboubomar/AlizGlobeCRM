@@ -15,7 +15,7 @@ export function errorLogEntry(
   const err = e instanceof Error ? e : undefined;
   const code = (e as { code?: unknown } | null)?.code;
   return {
-    level: 'error',
+    level: 'error' as const,
     ref,
     status,
     method: req.method,
