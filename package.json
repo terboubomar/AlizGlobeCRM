@@ -25,7 +25,7 @@
     "@nestjs/common": "^12.2.0",
     "@nestjs/core": "^12.2.0",
     "@nestjs/platform-express": "^12.2.0",
-    "@prisma/client": "6.19.0",
+    "@prisma/client": "6.19.3",
     "bullmq": "^5.60.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.8",
@@ -47,7 +47,7 @@
     "concurrently": "^9.2.0",
     "eslint": "^10.13.0",
     "prettier": "^3.9.10",
-    "prisma": "6.19.0",
+    "prisma": "6.19.3",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.46.0"
