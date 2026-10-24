@@ -5607,16 +5607,30 @@ th {
   height: 22px;
   flex-shrink: 0;
 }
-/* Small phones: the larger header controls leave room for the current page
-   name only, so the "workspace" crumb is dropped rather than wrapping. */
+/* Phones: the header shrinks its text, never the page. The page name
+   truncates instead of pushing the 44px controls off screen. */
+@media (max-width: 760px) {
+  .breadcrumb {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .breadcrumb > b {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .top-tools {
+    flex: 0 0 auto;
+  }
+}
+/* Small phones: room for the page name only. The "workspace" crumb and the
+   demo-only environment label (never shown in production) are dropped. */
 @media (max-width: 400px) {
   .breadcrumb > span,
-  .breadcrumb > svg {
-    display: none;
-  }
-  .breadcrumb > b,
+  .breadcrumb > svg,
   .demo-pill {
-    white-space: nowrap;
+    display: none;
   }
 }
 /* Phones: the case title gets the full width; its status badges wrap below it. */
