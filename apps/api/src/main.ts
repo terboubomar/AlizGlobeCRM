@@ -56,6 +56,7 @@ import { oidcReady, startOidc, finishOidc } from './oidc';
 import { rateLimit, trustedProxies, closeRateLimiter } from './rate-limit';
 import { upload, download, File } from './uploads';
 import { errorLogEntry } from './error-log';
+import { requestId, RequestWithId } from './request-id';
 import { decrypt, phoneHash } from './crypto';
 import { saveBrand, updateBranch, deleteDirectoryEntry, directoryStatusTx } from './directory';
 import { normalizePhone } from '../../../packages/domain/src';
@@ -555,6 +556,7 @@ async function main() {
       'Configure trusted proxy addresses and sanitized forwarding headers before production',
     );
   app.getHttpAdapter().getInstance().set('trust proxy', proxies);
+  app.use(requestId);
   app.use(helmet());
   app.use(cookieParser());
   app.use(
@@ -600,7 +602,8 @@ async function main() {
       const status = err.getStatus?.() ?? 500;
       let ref: string | undefined;
       if (status >= 500) {
-        const entry = errorLogEntry(e, host.switchToHttp().getRequest<Request>(), status);
+        const request = host.switchToHttp().getRequest<RequestWithId>();
+        const entry = errorLogEntry(e, request, status, request.requestId);
         ref = entry.ref;
         process.stderr.write(JSON.stringify(entry) + '\n');
       }
