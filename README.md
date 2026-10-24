@@ -31,7 +31,7 @@ An all-container local demo is provided:
 docker compose --profile app up --build -d
 ```
 
-It runs migrations and demo seed before API/web/worker startup. Do not use this development compose configuration as production hosting. The container flow could not be executed on the delivery machine because the Docker credential helper cancelled public-image pulls. Native PostgreSQL and the local worker fallback were used and tested instead. The Compose YAML was validated separately.
+It runs migrations and demo seed before API/web/worker startup. Do not use this development compose configuration as production hosting. CI's `containers` job builds every image and boots this stack on each push, checking the web page, the API through the web proxy, the worker and the setup step. The Dockerfile has three targets: `build` (full toolchain, used by `setup` for migrations and the demo seed), `server` (API and worker: compiled JavaScript and production dependencies only) and `web` (the Next.js standalone server). Runtime images contain no source code or dev tooling and run as the non-root `node` user.
 
 For development without Redis, set `WORKER_MODE=local` with `DEMO_MODE=true`. The same idempotent reconciliation runs every minute in a local process. Production cannot use this fallback.
 

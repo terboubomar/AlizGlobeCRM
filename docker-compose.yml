@@ -21,7 +21,8 @@ services:
       interval: 5s
       retries: 10
   setup:
-    build: .
+    # Full toolchain image: runs migrations and the demo seed, then exits.
+    build: { context: ., target: build }
     profiles: ['app']
     env_file: .env
     environment:
@@ -31,7 +32,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
   api:
-    build: .
+    build: { context: ., target: server }
     profiles: ['app']
     env_file: .env
     environment:
@@ -39,7 +40,7 @@ services:
       API_HOST: 0.0.0.0
       NODE_ENV: development
       UPLOAD_DIR: /app/.data/uploads
-    command: ['npm', 'run', 'start', '-w', 'apps/api']
+    command: ['node', 'apps/api/dist/apps/api/src/main.js']
     depends_on:
       setup: { condition: service_completed_successfully }
     volumes: ['uploads:/app/.data/uploads']
@@ -54,7 +55,7 @@ services:
       interval: 10s
       retries: 10
   worker:
-    build: .
+    build: { context: ., target: server }
     profiles: ['app']
     env_file: .env
     environment:
@@ -67,7 +68,7 @@ services:
       setup: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
   web:
-    build: .
+    build: { context: ., target: web }
     profiles: ['app']
     environment:
       HOSTNAME: 0.0.0.0

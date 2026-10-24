@@ -73,3 +73,38 @@ jobs:
           tar xzf gitleaks.tgz gitleaks
       - name: Scan full history for secrets
         run: ./gitleaks git --redact --no-banner -c .gitleaks.toml .
+
+  # Builds every image and boots the demo stack the way docker-compose.yml
+  # describes it, so container changes are proven before they merge.
+  containers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Configure demo environment
+        run: |
+          cp .env.example .env
+          sed -i "s/^PII_KEY=.*/PII_KEY=$(openssl rand -hex 32)/; s/^PHONE_HASH_KEY=.*/PHONE_HASH_KEY=$(openssl rand -hex 32)/" .env
+      - name: Build images and start the stack
+        run: docker compose --profile app up --build --detach
+      - name: Smoke test web, API proxy and worker
+        run: |
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:3000/api/health && break
+            sleep 5
+          done
+          curl -fsS http://127.0.0.1:3000/api/health | grep -q '"ok":true'
+          curl -fsS -o /dev/null http://127.0.0.1:3000/
+          curl -fsSI http://127.0.0.1:3000/ | grep -qi '^content-security-policy:'
+          test "$(docker compose ps --status running --format '{{.Service}}' worker)" = worker
+          test "$(docker compose ps --all --format '{{.ExitCode}}' setup)" = 0
+      - name: Image sizes
+        run: docker image ls --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep -i aliz
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose --profile app logs --no-color
+      - name: Stop the stack
+        if: always()
+        run: docker compose --profile app down --volumes
