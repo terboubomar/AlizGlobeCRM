@@ -9,6 +9,7 @@ export default ts.config(
       '**/.next/**',
       '**/.next-test/**',
       '**/next-env.d.ts',
+      '**/.claude/**',
     ],
   },
   js.configs.recommended,
