@@ -18,6 +18,22 @@ Deploy immutable container revisions behind a TLS gateway. Retain the last known
 
 ## Production controls still required
 
-Redacted centralized logs and OTel/Sentry; outbox recipient delivery; managed object-storage signed URLs and a deployed malware scanner; automated retention/legal holds and rights requests; actual IdP SSO; approved financial/SLA policy snapshots; business calendars and on-call coverage; container image CVE scanning; independent accessibility/security/UAT sign-off.
+Central log collection and alerting on the platform IT chooses, plus optional tracing (OpenTelemetry/Sentry); outbox recipient delivery; managed object-storage signed URLs and a deployed malware scanner; automated retention/legal holds and rights requests; actual IdP SSO; approved financial/SLA policy snapshots; business calendars and on-call coverage; container image CVE scanning; independent accessibility/security/UAT sign-off.
 
-Already in place: Redis-backed per-source rate limiting across API instances (fails closed), request IDs on every API response and in error logs, secret scanning of full history, `npm audit` and Dependabot for dependencies, and a CI container smoke test.
+Already in place: structured JSON logs (below), Redis-backed per-source rate limiting across API instances (fails closed), request IDs on every API response and in error logs, secret scanning of full history, `npm audit` and Dependabot for dependencies, and a CI container smoke test.
+
+## Logs and alerts
+
+The API and worker write one JSON object per line: `info` to stdout, `warn` and `error` to stderr. Point the platform's log collector at the containers' output; no agent or SDK is needed. Every line has `time`, `service` (`api` or `worker`), `level` and `event`. Lines never contain URLs, query strings, request or response bodies, error messages, names, phone numbers or tokens.
+
+| `event`           | Fields                                                         | Meaning                                                              |
+| ----------------- | -------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `request`         | `requestId`, `method`, `route` (pattern), `status`, `ms`       | One per API request. Healthy `/api/health` checks are skipped.       |
+| `unhandled_error` | `ref` (= request ID), `route`, `status`, `error`, `code`, `at` | A 5xx. The `ref` is shown to the user, so support can find the line. |
+| `job_failed`      | `job`, `error`, `code`                                         | A worker job failed; it retries on its next schedule.                |
+| `retention_run`   | `days`, `due`, `erased`, `skipped`                             | Daily retention result (only when retention is on).                  |
+| `startup_failed`  | `error`, `code`                                                | The API or worker could not start.                                   |
+
+The edge proxy's `$request_id` is reused as `requestId`, so one request can be followed from the proxy access log to the API. Set `LOG_REQUESTS=false` to turn off the per-request lines.
+
+Suggested alerts: any `startup_failed`; `unhandled_error` above a few per minute; `job_failed` for the same `job` three times in a row; `request` lines with `status` 429 rising sharply (rate limiting under attack); p95 `ms` on `/api/bootstrap` above an agreed budget.

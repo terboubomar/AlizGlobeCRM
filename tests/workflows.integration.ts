@@ -556,14 +556,11 @@ test(
     });
     await t.test('report export is scope filtered and excludes contact details', async () => {
       const group = await login('group');
-      const res = await fetch(
-        base +
-          'reports/export?brandId=waqf&from=' +
-          new Date().toISOString().slice(0, 10) +
-          '&to=' +
-          new Date().toISOString().slice(0, 10),
-        { headers: { Cookie: group } },
-      );
+      // Reports use Riyadh calendar days (UTC+3); a UTC date misses today's cases after 21:00 UTC.
+      const today = new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
+      const res = await fetch(base + 'reports/export?brandId=waqf&from=' + today + '&to=' + today, {
+        headers: { Cookie: group },
+      });
       assert.equal(res.status, 200);
       const csv = await res.text();
       assert.ok(csv.includes('واقف'));
