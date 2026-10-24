@@ -26,7 +26,9 @@ Mirror this order when adding checks, and keep local verification aligned with t
 
 ## Containers and release
 
-- `Dockerfile` is a two-stage Node 22 image; the runtime stage serves the Next web app as the non-root `node` user. `API_URL` is a build arg baked at web build time (Next rewrites proxy `/api`), so the API URL for the target environment must be set when building web.
+- `Dockerfile` targets: `build` (full toolchain; compose `setup` runs migrations and the demo seed with it), `server` (API and worker: compiled JS, root production deps and the generated Prisma client; no source), `web` (Next standalone server, the default target). Runtime images run as the non-root `node` user. `API_URL` is a build arg baked in at web build time (Next rewrites proxy `/api`), so set it for the target environment when building `web`.
+- CI job `containers` builds all images and boots `docker compose --profile app`, then smoke-tests the web page, `/api/health` through the web proxy, the worker and the setup exit code. Run it locally the same way before changing the Dockerfile or compose file.
+- Unexpected API errors (5xx) are logged to stderr as one JSON line without message text or request data (`apps/api/src/error-log.ts`); the client gets the same `ref` to quote to support.
 - `docker-compose.yml` is **local demo only** (localhost ports, demo credentials, `--profile app` runs migrate + demo seed before API/web/worker). Never present it as production hosting, and never run `db:seed:demo` against staging or production.
 - Release model (`docs/DEPLOYMENT.md`): deploy immutable image revisions behind a TLS gateway, keep the last known-good image, run `npm run db:migrate` with backward-compatible migrations **before** switching traffic, verify `/api/health` and a scoped read, and keep a rollback image. A previous image does not undo a migration — see the `db-migration` skill for backward-compatible changes.
 - Production requires real managed Postgres/Redis/storage, independent `PII_KEY`/`PHONE_HASH_KEY`, OIDC+MFA, and the open controls in `docs/DEPLOYMENT.md`; flags alone are not sign-off.

@@ -19,3 +19,8 @@ dist-worker
 dist-worker
 
 **/.next-test
+
+# Not needed in images
+.claude
+.impeccable
+.github

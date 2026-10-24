@@ -55,6 +55,7 @@ import { listUsers, saveUser, userStatus } from './users';
 import { oidcReady, startOidc, finishOidc } from './oidc';
 import { rateLimit, trustedProxies, closeRateLimiter } from './rate-limit';
 import { upload, download, File } from './uploads';
+import { errorLogEntry } from './error-log';
 import { decrypt, phoneHash } from './crypto';
 import { saveBrand, updateBranch, deleteDirectoryEntry, directoryStatusTx } from './directory';
 import { normalizePhone } from '../../../packages/domain/src';
@@ -597,12 +598,19 @@ async function main() {
           .json({ code: 'CONFLICT', message: 'السجل موجود أو تم إرسال الطلب سابقاً؛ حدّث الصفحة' });
       const err = e as { status?: number; getStatus?: () => number };
       const status = err.getStatus?.() ?? 500;
+      let ref: string | undefined;
+      if (status >= 500) {
+        const entry = errorLogEntry(e, host.switchToHttp().getRequest<Request>(), status);
+        ref = entry.ref;
+        process.stderr.write(JSON.stringify(entry) + '\n');
+      }
       return res.status(status).json({
         code: 'REQUEST_ERROR',
         message:
           status === 413
             ? 'حجم الملف أكبر من المسموح'
             : 'تعذر إتمام الطلب. حاول مرة أخرى أو تواصل مع مسؤول النظام',
+        ...(ref ? { ref } : {}),
       });
     },
   });
