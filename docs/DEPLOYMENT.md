@@ -18,9 +18,9 @@ Deploy immutable container revisions behind a TLS gateway. Retain the last known
 
 ## Production controls still required
 
-Central log collection and alerting on the platform IT chooses, plus optional tracing (OpenTelemetry/Sentry); notification acknowledgement and on-call routing; managed object-storage signed URLs and a deployed malware scanner; automated retention/legal holds and rights requests; actual IdP SSO; approved financial/SLA policy snapshots; business calendars and on-call coverage; container image CVE scanning; independent accessibility/security/UAT sign-off.
+Central log collection and alerting on the platform IT chooses, plus optional tracing (OpenTelemetry/Sentry); notification acknowledgement and on-call routing; automated retention/legal holds and rights requests; actual IdP SSO; approved financial/SLA policy snapshots; business calendars and on-call coverage; independent accessibility/security/UAT sign-off.
 
-Already in place: structured JSON logs (below), Redis-backed per-source rate limiting across API instances (fails closed), request IDs on every API response and in error logs, secret scanning of full history, `npm audit` and Dependabot for dependencies, and a CI container smoke test.
+Already in place: structured JSON logs (below), Redis-backed per-source rate limiting across API instances (fails closed), request IDs on every API response and in error logs, secret scanning of full history, `npm audit` and Dependabot for dependencies, a CI container smoke test, a Trivy scan of the shipped images, app-encrypted photo storage on any S3-compatible bucket (`STORAGE_DRIVER=s3`) and ClamAV upload scanning (`MALWARE_SCANNER=tcp://…:3310`; freshclam must be able to reach `database.clamav.net`, or a mirror, to keep signatures current).
 
 ## Logs and alerts
 

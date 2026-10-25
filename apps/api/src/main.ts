@@ -55,6 +55,7 @@ import { listUsers, saveUser, userStatus } from './users';
 import { oidcReady, startOidc, finishOidc } from './oidc';
 import { rateLimit, trustedProxies, closeRateLimiter } from './rate-limit';
 import { upload, download, File } from './uploads';
+import { storageDriver } from './storage';
 import { errorLogEntry } from './error-log';
 import { requestId, RequestWithId } from './request-id';
 import { errorKind, log, requestLog } from './log';
@@ -547,6 +548,7 @@ class AppModule {}
 async function main() {
   if (process.env.NODE_ENV === 'production' && process.env.DEMO_MODE === 'true')
     throw new Error('DEMO_MODE prohibited in production');
+  storageDriver();
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
   const proxies = trustedProxies();
   if (

@@ -1,9 +1,5 @@
 import sharp from 'sharp';
-import { mkdir, writeFile, readFile, unlink } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { db } from '../../../packages/db/client';
 import {
   DomainError,
@@ -15,6 +11,9 @@ import { hash } from './crypto';
 import { isDemo } from './auth';
 import { getTicket } from './service';
 import { getRefund } from './refunds';
+import { getFile, putFile, removeFile } from './storage';
+import { scan } from './scanner';
+import { log, errorKind } from './log';
 export type File = { buffer: Buffer; size: number; mimetype: string };
 export async function upload(
   id: string,
@@ -43,8 +42,6 @@ export async function upload(
   }
   if (!files.length || files.length > 3)
     throw new DomainError('FILE_COUNT', 400, 'أرفق من صورة إلى ثلاث صور');
-  const dir = resolve(process.env.UPLOAD_DIR ?? '.data/uploads');
-  await mkdir(dir, { recursive: true });
   const prepared: {
     key: string;
     mime: string;
@@ -73,19 +70,17 @@ export async function upload(
               : '';
       if (real !== file.mimetype)
         throw new DomainError('MIME_MISMATCH', 400, 'نوع الصورة لا يطابق محتواها');
-      const key = randomUUID() + '.webp',
-        path = resolve(dir, key);
+      const key = randomUUID() + '.webp';
       if (!isDemo()) {
         if (!process.env.MALWARE_SCANNER)
           throw new DomainError('SCANNER_UNAVAILABLE', 503, 'فحص الملفات غير متاح حالياً');
-        const raw = resolve(dir, randomUUID() + '.quarantine');
-        await writeFile(raw, file.buffer, { flag: 'wx', mode: 0o600 });
-        try {
-          await promisify(execFile)(process.env.MALWARE_SCANNER, ['--no-summary', raw], {
-            timeout: 30000,
-          });
-        } finally {
-          await unlink(raw).catch(() => {});
+        const result = await scan(file.buffer).catch((e: unknown) => {
+          log({ level: 'error', event: 'malware_scan_failed', ...errorKind(e) });
+          throw new DomainError('SCANNER_UNAVAILABLE', 503, 'فحص الملفات غير متاح حالياً');
+        });
+        if (!result.clean) {
+          log({ level: 'warn', event: 'malware_rejected', signature: result.signature });
+          throw new DomainError('MALWARE_FOUND', 422, 'تعذر قبول الملف بعد الفحص الأمني');
         }
       }
       const clean = await sharp(file.buffer, { limitInputPixels: 20000000, animated: false })
@@ -93,7 +88,7 @@ export async function upload(
         .resize({ width: 1800, height: 1800, fit: 'inside', withoutEnlargement: true })
         .webp({ quality: 85 })
         .toBuffer();
-      await writeFile(path, clean, { flag: 'wx', mode: 0o600 });
+      await putFile(key, clean);
       prepared.push({
         key,
         mime: 'image/webp',
@@ -126,7 +121,7 @@ export async function upload(
       return { ok: true };
     });
   } catch (e) {
-    await Promise.all(prepared.map((f) => unlink(resolve(dir, f.key)).catch(() => {})));
+    await Promise.all(prepared.map((f) => removeFile(f.key).catch(() => {})));
     throw e;
   }
 }
@@ -139,5 +134,5 @@ export async function download(a: Actor, id: string) {
   if (!['CLEAN', ...(isDemo() ? ['CLEAN_DEMO'] : [])].includes(f.status))
     throw new DomainError('QUARANTINED', 403, 'المرفق قيد الفحص');
   await db.audit.create({ data: { actor: a.id, action: 'EVIDENCE_VIEWED', entityId: id } });
-  return readFile(resolve(process.env.UPLOAD_DIR ?? '.data/uploads', f.key));
+  return getFile(f.key);
 }
