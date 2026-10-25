@@ -10,6 +10,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "test:web": "TSX_TSCONFIG_PATH=apps/web/tsconfig.json node --import tsx --test apps/web/tests/*.test.tsx",
     "test:integration": "tsx scripts/test-isolated.ts integration",
+    "backup:rehearse": "tsx scripts/backup-rehearsal.ts",
     "test:e2e": "tsx scripts/test-isolated.ts browser",
     "db:generate": "prisma generate --schema packages/db/prisma/schema.prisma",
     "db:migrate": "prisma migrate deploy --schema packages/db/prisma/schema.prisma",

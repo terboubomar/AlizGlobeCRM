@@ -43,6 +43,10 @@ jobs:
       - run: npm run test:web
       - run: npm audit --audit-level=high
       - run: npm run test:integration
+      # pg_dump/pg_restore from the same Postgres major as the server.
+      - run: npm run backup:rehearse
+        env:
+          PG_TOOLS_IMAGE: postgres:17-alpine
       - run: npx playwright install --with-deps chromium --only-shell
       - run: npm run test:e2e
       - run: npm run build
@@ -54,6 +58,69 @@ jobs:
             test-results/
             playwright-report/
           retention-days: 7
+
+  # Rollback rehearsal: the base branch's API (the release being replaced)
+  # must still work after this branch's migrations run, so an image
+  # rollback never needs a database rollback.
+  rollback:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: aliz
+          POSTGRES_PASSWORD: localdev
+          POSTGRES_DB: aliz
+        ports: ['54329:5432']
+        options: >-
+          --health-cmd "pg_isready -U aliz"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DEMO_MODE: 'true'
+      SEED_DEMO_USERS: 'true'
+      SEED_DEMO_CASES: 'true'
+      API_PORT: '4000'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: head
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: '*/package-lock.json'
+      - name: Shared test keys
+        run: |
+          for k in PII_KEY PHONE_HASH_KEY AUTH_SESSION_KEY; do echo "$k=$(openssl rand -hex 32)" >> "$GITHUB_ENV"; done
+      - name: Migrate and seed with this branch
+        working-directory: head
+        run: |
+          npm ci
+          cp .env.example .env
+          npm run db:generate
+          npm run db:migrate
+          npm run db:seed:demo
+      - name: Start the base branch's API on the migrated database
+        working-directory: base
+        run: |
+          npm ci
+          cp .env.example .env
+          npm run db:generate
+          nohup npx tsx apps/api/src/main.ts > ../base-api.log 2>&1 &
+      - name: Previous release still serves cases
+        working-directory: head
+        run: npx tsx scripts/rollback-smoke.ts
+      - name: Base API log on failure
+        if: failure()
+        run: tail -50 base-api.log
 
   secrets:
     runs-on: ubuntu-latest
