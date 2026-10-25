@@ -23,7 +23,7 @@
 | D05 | Operations               | Approved SLA versions, business calendars and escalation map       | Proposed demo wall-clock values only            |
 | D06 | Finance                  | Approval limits, finance scope, processor and independent verifier | Production decisions disabled                   |
 | D07 | Legal / privacy officer  | Approved privacy notice, retention, region and rights workflows    | Live intake disabled                            |
-| D08 | IT                       | Staff IdP, MFA claims, hosting/domain, backup/RPO/RTO              | No production credentials or deployment         |
+| D08 | IT                       | Staff IdP, MFA claims, hosting/domain, backup/RPO/RTO              | Decided in `docs/IT_PLAN.md`; accounts pending  |
 | D09 | Communications           | Approved SMS/email/OTP provider                                    | External messages disabled                      |
 | D10 | Marketing                | Formal brand names and corporate identity approval                 | Original supplied assets used; no logo invented |
 

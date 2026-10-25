@@ -24,6 +24,11 @@ Mirror this order when adding checks, and keep local verification aligned with t
 - Playwright's Chromium is installed by CI's own step. Locally, install it once; in this cloud sandbox it is pre-installed — don't reinstall.
 - When you add security scanning to CI, prefer the in-repo security skills: `implementing-secrets-scanning-in-ci-cd`, `integrating-sast-into-github-actions-pipeline`, `scanning-containers-with-trivy-in-cicd`, and `securing-github-actions-workflows` (pin actions to a commit SHA, least-privilege `permissions:`).
 
+## Backup and rollback rehearsals
+
+- `npm run backup:rehearse` (`scripts/backup-rehearsal.ts`) builds a disposable seeded database, dumps it with `pg_dump -Fc`, restores it into a second one and fails unless every table and trigger matches, the schema is current, the history tables still refuse updates and encrypted fields decrypt. CI runs it in `verify` with `PG_TOOLS_IMAGE=postgres:17-alpine` so the tools match the server major. It refuses non-local servers unless `BACKUP_REHEARSAL_ADMIN_URL` is set; never point it at production.
+- The `rollback` job (pull requests only) migrates and seeds with the PR's code, then starts the **base branch's** API on that database and runs `scripts/rollback-smoke.ts`. A red `rollback` means a migration is not backward-compatible: split it (add first, remove in a later release), see the `db-migration` skill.
+
 ## Containers and release
 
 - `Dockerfile` targets: `build` (full toolchain; compose `setup` runs migrations and the demo seed with it), `server` (API and worker: compiled JS, root production deps and the generated Prisma client; no source), `web` (Next standalone server, the default target). Runtime images run as the non-root `node` user. `API_URL` is a build arg baked in at web build time (Next rewrites proxy `/api`), so set it for the target environment when building `web`.
