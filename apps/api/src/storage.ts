@@ -97,9 +97,9 @@ const s3Driver: Driver = {
         Bucket: bucket,
         Key: prefix + key,
         Body: body,
+        // Keys are random UUIDs generated here, so writes never collide. No
+        // conditional-write header: not every S3-compatible store supports it.
         ContentType: 'application/octet-stream',
-        // Never overwrite an existing object.
-        IfNoneMatch: '*',
       }),
     );
   },
