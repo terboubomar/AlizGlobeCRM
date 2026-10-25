@@ -31,7 +31,7 @@ This system will hold customer complaints and refund decisions for a restaurant 
 ## Inputs
 
 - Validate request bodies with zod schemas (see `ticketInput`).
-- Uploads: max 3 images, 5 MB, JPG/PNG/WebP, magic-byte check, pixel limits, re-encode and strip EXIF (`apps/api/src/uploads.ts`). Non-demo uploads fail closed without `MALWARE_SCANNER`.
+- Uploads: max 3 images, 5 MB, JPG/PNG/WebP, magic-byte check, pixel limits, re-encode and strip EXIF (`apps/api/src/uploads.ts`). Non-demo uploads are scanned by clamd (`apps/api/src/scanner.ts`) and fail closed (503) when no scanner is configured or it errors; a detection is a 422 and nothing is stored. Files go through `apps/api/src/storage.ts` only, which encrypts them before any driver writes them; never write upload bytes to disk or a bucket directly.
 - Webhooks (WhatsApp, Telegram) verify their signature/secret before doing anything.
 - Public status tokens are high-entropy (`token()`) and expiring; never use sequential IDs in public URLs.
 - Rate limits use `TRUSTED_PROXY_CIDRS`; don't trust `X-Forwarded-For` from anywhere else.

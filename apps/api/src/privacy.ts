@@ -1,9 +1,8 @@
-import { unlink } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import type { Prisma } from '@prisma/client';
 import { db } from '../../../packages/db/client';
 import { normalizePhone } from '../../../packages/domain/src';
 import { decrypt, encrypt, phoneHash } from './crypto';
+import { removeFile } from './storage';
 
 // Customer data requests (see / delete my data) and the retention sweep.
 // Erasing keeps the anonymous case record (brand, branch, category, state,
@@ -173,14 +172,7 @@ export async function eraseTicketTx(
 }
 
 async function removeFiles(keys: string[]) {
-  const dir = resolve(process.env.UPLOAD_DIR ?? '.data/uploads');
-  for (const key of keys) {
-    const path = resolve(dir, key);
-    if (!path.startsWith(dir + '/')) continue;
-    await unlink(path).catch((e: NodeJS.ErrnoException) => {
-      if (e.code !== 'ENOENT') throw e;
-    });
-  }
+  for (const key of keys) await removeFile(key);
 }
 
 /** Erase one case. Photo files are deleted only after the database change commits. */
